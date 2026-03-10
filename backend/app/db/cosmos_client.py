@@ -111,4 +111,7 @@ def query_items(
     }
     if partition_key is not None:
         kwargs["partition_key"] = partition_key
+    else:
+        # Enable cross-partition queries when no partition key is specified
+        kwargs["enable_cross_partition_query"] = True
     return list(container.query_items(**kwargs))
