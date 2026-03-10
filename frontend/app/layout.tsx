@@ -1,0 +1,33 @@
+import type { Metadata, Viewport } from "next";
+import "@/styles/globals.css";
+import { Providers } from "@/components/Providers";
+import { Header } from "@/components/Header";
+import { PWAInit } from "@/components/PWAInit";
+import { SyncStatus } from "@/components/SyncStatus";
+
+export const metadata: Metadata = {
+  title: "Travel Companion",
+  description: "Your personal travel journal, expense tracker & photo album.",
+  manifest: "/manifest.json",
+};
+
+export const viewport: Viewport = {
+  width: "device-width",
+  initialScale: 1,
+  themeColor: "#2563eb",
+};
+
+export default function RootLayout({ children }: { children: React.ReactNode }) {
+  return (
+    <html lang="en">
+      <body className="min-h-screen flex flex-col">
+        <Providers>
+          <Header />
+          <main className="flex-1">{children}</main>
+          <SyncStatus />
+          <PWAInit />
+        </Providers>
+      </body>
+    </html>
+  );
+}

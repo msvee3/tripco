@@ -1,0 +1,29 @@
+version: "3.9"
+
+services:
+  # ── Azurite (local Blob Storage emulator) ──────────
+  azurite:
+    image: mcr.microsoft.com/azure-storage/azurite
+    ports:
+      - "10000:10000" # Blob
+      - "10001:10001" # Queue
+      - "10002:10002" # Table
+    volumes:
+      - azurite-data:/data
+
+  # ── FastAPI backend ────────────────────────────────
+  backend:
+    build: ./backend
+    ports:
+      - "8000:8000"
+    env_file:
+      - .env.example
+    environment:
+      - DEBUG=true
+    volumes:
+      - ./backend:/app
+    depends_on:
+      - azurite
+
+volumes:
+  azurite-data:

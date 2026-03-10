@@ -1,0 +1,9 @@
+.env
+.env.local
+node_modules/
+__pycache__/
+.venv/
+*.pyc
+.next/
+dist/
+azurite-data/
