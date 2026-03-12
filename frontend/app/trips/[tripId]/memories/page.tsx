@@ -128,7 +128,9 @@ export default function MemoriesPage() {
                 m.type === "video" ? (
                   <video src={m.fileUrl} className="h-48 w-full object-cover" controls />
                 ) : (
-                  <img src={m.thumbnailUrl || m.fileUrl} alt={m.caption} className="h-48 w-full object-cover" />
+                  <a href={m.fileUrl} target="_blank" rel="noopener noreferrer">
+                    <img src={m.thumbnailUrl || m.fileUrl} alt={m.caption} className="h-48 w-full object-cover" />
+                  </a>
                 )
               ) : (
                 <div className="flex h-48 items-center justify-center bg-gray-100 text-gray-400">
