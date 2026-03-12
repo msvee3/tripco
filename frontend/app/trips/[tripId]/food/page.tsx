@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import { useParams } from "next/navigation";
 import { useSession } from "next-auth/react";
-import { Plus, Star, MapPin } from "lucide-react";
+import { Plus, Star, MapPin, Trash2 } from "lucide-react";
 import { api, setTokens } from "@/lib/api";
 import type { FoodLog } from "@/lib/types";
 
@@ -15,30 +15,34 @@ export default function FoodPage() {
   const [showForm, setShowForm] = useState(false);
 
   useEffect(() => {
+    if (status === "loading") return;
     if (status !== "authenticated") {
-      if (status === "unauthenticated") setLoading(false);
-      return;
-    }
-
-    const s = session as any;
-    if (!s?.accessToken) {
       setLoading(false);
       return;
     }
 
-    setTokens(s.accessToken, s.refreshToken);
+    const s = session as any;
+    if (s?.accessToken) {
+      setTokens(s.accessToken, s.refreshToken);
+      console.log("[Food] Tokens set from NextAuth session");
+    } else {
+      console.warn("[Food] No accessToken in NextAuth session");
+      setLoading(false);
+      return;
+    }
 
     (async () => {
       try {
+        console.log("[Food] Fetching food logs for trip:", tripId);
         const data = await api.get<FoodLog[]>(`/trips/${tripId}/food`);
         setLogs(data);
       } catch (err: any) {
-        console.error("Failed to load food logs:", err);
+        console.error("[Food] Failed to load food logs:", err);
       } finally {
         setLoading(false);
       }
     })();
-  }, [session, tripId]);
+  }, [status, session, tripId]);
 
   async function handleAdd(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
@@ -55,6 +59,16 @@ export default function FoodPage() {
       setShowForm(false);
     } catch (err: any) {
       alert(err.message);
+    }
+  }
+
+  async function handleDelete(logId: string) {
+    if (!confirm("Delete this food log?")) return;
+    try {
+      await api.del(`/trips/${tripId}/food/${logId}`);
+      setLogs((prev) => prev.filter((log) => log.id !== logId));
+    } catch (err: any) {
+      alert(err.message || "Failed to delete food log");
     }
   }
 
@@ -115,9 +129,9 @@ export default function FoodPage() {
       ) : (
         <div className="space-y-2">
           {logs.map((log) => (
-            <div key={log.id} className="rounded-lg border px-4 py-3">
+            <div key={log.id} className="group rounded-lg border px-4 py-3 hover:bg-gray-50">
               <div className="flex items-start justify-between">
-                <div>
+                <div className="flex-1">
                   <p className="font-medium">{log.name}</p>
                   <div className="flex gap-3 text-xs text-gray-400">
                     {log.location && (
@@ -129,11 +143,19 @@ export default function FoodPage() {
                   </div>
                   {log.notes && <p className="mt-1 text-sm text-gray-500">{log.notes}</p>}
                 </div>
-                {log.rating != null && (
-                  <span className="flex items-center gap-1 text-sm font-medium text-amber-500">
-                    <Star className="h-4 w-4 fill-current" /> {log.rating}
-                  </span>
-                )}
+                <div className="flex items-center gap-2">
+                  {log.rating != null && (
+                    <span className="flex items-center gap-1 text-sm font-medium text-amber-500 whitespace-nowrap">
+                      <Star className="h-4 w-4 fill-current" /> {log.rating}
+                    </span>
+                  )}
+                  <button
+                    onClick={() => handleDelete(log.id)}
+                    className="rounded px-2 py-1 text-xs text-red-600 hover:bg-red-50 opacity-0 transition-opacity group-hover:opacity-100"
+                  >
+                    Delete
+                  </button>
+                </div>
               </div>
             </div>
           ))}
