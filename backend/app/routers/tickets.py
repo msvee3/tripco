@@ -6,7 +6,6 @@ from app.db.cosmos_client import create_item, query_items, upsert_item, delete_i
 from app.middleware.auth import get_current_user
 from app.models.schemas import CreateTicketRequest, TicketOut, new_id, utcnow
 from app.services.blob import generate_read_sas
-from app.core.config import get_settings
 
 router = APIRouter(tags=["tickets"])
 
@@ -103,15 +102,14 @@ def delete_ticket(trip_id: str, ticket_id: str, user: dict = Depends(get_current
 def _to_out(d: dict) -> TicketOut:
     file_url = None
     if d.get("fileUrl"):
-        # fileUrl is stored as blob_name, generate read SAS for it
+        # fileUrl is stored as blob_name (e.g., "userId/uuid.ext")
+        # Generate read SAS for direct access
         try:
-            s = get_settings()
             blob_name = d["fileUrl"]
-            # Determine container from blob path or default to media
-            container = "tickets" if "ticket" in blob_name.lower() else "media"
-            file_url = generate_read_sas(container, blob_name, ttl_hours=24)
+            # Use media container for ticket attachments
+            file_url = generate_read_sas("media", blob_name, ttl_hours=24)
         except Exception:
-            # Fallback to stored URL if SAS generation fails
+            # Fallback to raw stored URL if SAS generation fails
             file_url = d.get("fileUrl")
     
     return TicketOut(
