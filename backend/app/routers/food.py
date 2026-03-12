@@ -5,6 +5,7 @@ from fastapi import APIRouter, Depends, HTTPException
 from app.db.cosmos_client import create_item, query_items
 from app.middleware.auth import get_current_user
 from app.models.schemas import CreateFoodLogRequest, FoodLogOut, new_id, utcnow
+from app.services.blob import generate_read_sas
 
 router = APIRouter(tags=["food"])
 
@@ -55,6 +56,15 @@ def create_food_log(trip_id: str, body: CreateFoodLogRequest, user: dict = Depen
 
 
 def _to_out(d: dict) -> FoodLogOut:
+    photos_with_sas = []
+    for photo in d.get("photos", []):
+        try:
+            sas_url = generate_read_sas("media", photo, ttl_hours=24)
+            photos_with_sas.append(sas_url)
+        except Exception:
+            # Fallback to raw URL if SAS generation fails
+            photos_with_sas.append(photo)
+    
     return FoodLogOut(
         id=d["id"],
         tripId=d["tripId"],
@@ -62,7 +72,7 @@ def _to_out(d: dict) -> FoodLogOut:
         name=d["name"],
         location=d.get("location", ""),
         rating=d.get("rating"),
-        photos=d.get("photos", []),
+        photos=photos_with_sas,
         notes=d.get("notes", ""),
         date=d.get("date"),
         createdAt=d["createdAt"],

@@ -5,6 +5,7 @@ from fastapi import APIRouter, Depends, HTTPException
 from app.db.cosmos_client import create_item, delete_item, query_items, read_item, upsert_item
 from app.middleware.auth import get_current_user
 from app.models.schemas import CreateMemoryRequest, MemoryOut, new_id, utcnow
+from app.services.blob import generate_read_sas
 
 router = APIRouter(tags=["memories"])
 
@@ -79,13 +80,31 @@ def delete_memory(trip_id: str, memory_id: str, user: dict = Depends(get_current
 
 
 def _doc_to_memory(d: dict) -> MemoryOut:
+    file_url = None
+    if d.get("fileUrl"):
+        # fileUrl is stored as blob_name, generate read SAS for it
+        try:
+            blob_name = d["fileUrl"]
+            file_url = generate_read_sas("media", blob_name, ttl_hours=24)
+        except Exception:
+            # Fallback to stored URL if SAS generation fails
+            file_url = d.get("fileUrl")
+    
+    thumbnail_url = None
+    if d.get("thumbnailUrl"):
+        try:
+            blob_name = d["thumbnailUrl"]
+            thumbnail_url = generate_read_sas("media", blob_name, ttl_hours=24)
+        except Exception:
+            thumbnail_url = d.get("thumbnailUrl")
+    
     return MemoryOut(
         id=d["id"],
         tripId=d["tripId"],
         userId=d["userId"],
         type=d.get("memoryType", "photo"),
-        fileUrl=d.get("fileUrl"),
-        thumbnailUrl=d.get("thumbnailUrl"),
+        fileUrl=file_url,
+        thumbnailUrl=thumbnail_url,
         caption=d.get("caption", ""),
         location=d.get("location", ""),
         tags=d.get("tags", []),
