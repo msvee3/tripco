@@ -12,9 +12,9 @@ let _refreshToken: string | null = null;
 export function setTokens(access: string, refresh: string) {
   _accessToken = access;
   _refreshToken = refresh;
-  // Persist refresh token to survive hard navigations (cookie would be better; this works for MVP)
+  // Persist refresh token in localStorage for persistent login across browser sessions
   if (typeof window !== "undefined") {
-    sessionStorage.setItem("rt", refresh);
+    localStorage.setItem("rt", refresh);
   }
 }
 
@@ -26,13 +26,29 @@ export function clearTokens() {
   _accessToken = null;
   _refreshToken = null;
   if (typeof window !== "undefined") {
-    sessionStorage.removeItem("rt");
+    localStorage.removeItem("rt");
   }
 }
 
 export function hydrateRefreshToken() {
   if (typeof window !== "undefined") {
-    _refreshToken = sessionStorage.getItem("rt");
+    _refreshToken = localStorage.getItem("rt");
+  }
+}
+
+/**
+ * On app startup: hydrate refresh token and attempt to refresh.
+ * Restores user session across browser sessions (persistent login).
+ */
+export async function persistentHydrate(): Promise<void> {
+  hydrateRefreshToken();
+  if (_refreshToken) {
+    try {
+      await refreshAccessToken();
+    } catch (err) {
+      // Refresh failed; user will need to login again
+      clearTokens();
+    }
   }
 }
 
