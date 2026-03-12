@@ -188,39 +188,46 @@ export default function TicketsPage() {
           <p>No tickets uploaded yet.</p>
         </div>
       ) : (
-        <div className="space-y-2">
+        <div className="space-y-3">
           {tickets.map((t) => (
-            <div key={t.id} className="flex items-center justify-between gap-4 rounded-lg border px-4 py-3 hover:bg-gray-50">
-              <div className="flex items-center gap-4 flex-1">
-                {typeIcons[t.type] || <FileText className="h-5 w-5 text-gray-400" />}
-                <div className="flex-1">
-                  <p className="font-medium">{t.title}</p>
-                  <p className="text-xs text-gray-400 capitalize">{t.type} · {t.date || "—"}</p>
-                  {t.notes && <p className="mt-0.5 text-sm text-gray-500">{t.notes}</p>}
+            <div key={t.id} className="rounded-lg border p-4">
+              <div className="flex items-start justify-between gap-4">
+                <div className="flex items-start gap-3 flex-1">
+                  <div className="mt-1">
+                    {typeIcons[t.type] || <FileText className="h-5 w-5 text-gray-400" />}
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <p className="font-medium text-gray-900">{t.title}</p>
+                    <p className="text-sm text-gray-500">{t.type} · {t.date || "—"}</p>
+                    {t.notes && <p className="mt-1 text-sm text-gray-600">{t.notes}</p>}
+                  </div>
                 </div>
-              </div>
-              <div className="flex items-center gap-3">
-                {t.fileUrl && (
-                  <a href={t.fileUrl} target="_blank" rel="noopener noreferrer" className="text-sm text-brand-600 hover:underline">
-                    View
-                  </a>
-                )}
-                <button
-                  onClick={() => handleEdit(t)}
-                  className="p-2 text-gray-600 hover:text-brand-600 hover:bg-brand-50 rounded-md transition-colors"
-                  aria-label="Edit ticket"
-                  title="Edit"
-                >
-                  <Edit2 className="h-5 w-5" />
-                </button>
-                <button
-                  onClick={() => handleDelete(t.id)}
-                  className="p-2 text-gray-600 hover:text-red-600 hover:bg-red-50 rounded-md transition-colors"
-                  aria-label="Delete ticket"
-                  title="Delete"
-                >
-                  <Trash2 className="h-5 w-5" />
-                </button>
+                <div className="flex items-center gap-1 flex-shrink-0">
+                  {t.fileUrl && (
+                    <a
+                      href={t.fileUrl}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="px-3 py-1 text-sm text-brand-600 hover:bg-brand-50 rounded transition-colors"
+                    >
+                      View
+                    </a>
+                  )}
+                  <button
+                    onClick={() => handleEdit(t)}
+                    className="p-2 hover:bg-blue-100 rounded text-blue-600 hover:text-blue-700 transition-all"
+                    type="button"
+                  >
+                    <Edit2 className="h-5 w-5" />
+                  </button>
+                  <button
+                    onClick={() => handleDelete(t.id)}
+                    className="p-2 hover:bg-red-100 rounded text-red-600 hover:text-red-700 transition-all"
+                    type="button"
+                  >
+                    <Trash2 className="h-5 w-5" />
+                  </button>
+                </div>
               </div>
             </div>
           ))}
