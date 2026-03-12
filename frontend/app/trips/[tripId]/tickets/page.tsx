@@ -188,44 +188,46 @@ export default function TicketsPage() {
           <p>No tickets uploaded yet.</p>
         </div>
       ) : (
-        <div className="space-y-3">
+        <div className="space-y-4">
           {tickets.map((t) => (
-            <div key={t.id} className="rounded-lg border p-4">
-              <div className="flex items-start justify-between gap-4">
-                <div className="flex items-start gap-3 flex-1">
-                  <div className="mt-1">
-                    {typeIcons[t.type] || <FileText className="h-5 w-5 text-gray-400" />}
-                  </div>
-                  <div className="flex-1 min-w-0">
-                    <p className="font-medium text-gray-900">{t.title}</p>
-                    <p className="text-sm text-gray-500">{t.type} · {t.date || "—"}</p>
-                    {t.notes && <p className="mt-1 text-sm text-gray-600">{t.notes}</p>}
+            <div key={t.id} className="border border-gray-200 rounded-lg p-4">
+              <div className="grid grid-cols-1 gap-4 md:grid-cols-4">
+                <div className="md:col-span-3">
+                  <div className="flex gap-3">
+                    <div className="flex-shrink-0">
+                      {typeIcons[t.type] || <FileText className="h-5 w-5 text-gray-400" />}
+                    </div>
+                    <div className="flex-1">
+                      <h3 className="font-medium text-gray-900 text-lg">{t.title}</h3>
+                      <p className="text-sm text-gray-600">{t.type} • {t.date || "No date"}</p>
+                      {t.notes && <p className="text-sm text-gray-600 mt-1">{t.notes}</p>}
+                    </div>
                   </div>
                 </div>
-                <div className="flex items-center gap-1 flex-shrink-0">
+                <div className="flex flex-wrap gap-2 md:flex-col md:items-end">
                   {t.fileUrl && (
                     <a
                       href={t.fileUrl}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="px-3 py-1 text-sm text-brand-600 hover:bg-brand-50 rounded transition-colors"
+                      className="inline-block bg-blue-500 text-white px-3 py-1 rounded text-sm hover:bg-blue-600"
                     >
-                      View
+                      View File
                     </a>
                   )}
                   <button
                     onClick={() => handleEdit(t)}
-                    className="p-2 hover:bg-blue-100 rounded text-blue-600 hover:text-blue-700 transition-all"
+                    className="bg-blue-100 text-blue-700 px-3 py-1 rounded text-sm hover:bg-blue-200 font-medium"
                     type="button"
                   >
-                    <Edit2 className="h-5 w-5" />
+                    Edit
                   </button>
                   <button
                     onClick={() => handleDelete(t.id)}
-                    className="p-2 hover:bg-red-100 rounded text-red-600 hover:text-red-700 transition-all"
+                    className="bg-red-100 text-red-700 px-3 py-1 rounded text-sm hover:bg-red-200 font-medium"
                     type="button"
                   >
-                    <Trash2 className="h-5 w-5" />
+                    Delete
                   </button>
                 </div>
               </div>
