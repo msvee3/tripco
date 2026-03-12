@@ -11,19 +11,22 @@ const CATEGORIES = ["food", "transport", "accommodation", "sightseeing", "shoppi
 
 export default function ExpensesPage() {
   const { tripId } = useParams<{ tripId: string }>();
-  const { data: session } = useSession();
+  const { data: session, status } = useSession();
   const [expenses, setExpenses] = useState<Expense[]>([]);
   const [summary, setSummary] = useState<ExpenseSummary | null>(null);
   const [loading, setLoading] = useState(true);
   const [showForm, setShowForm] = useState(false);
 
   useEffect(() => {
-    if (session) {
-      const s = session as any;
-      if (s.accessToken) setTokens(s.accessToken, s.refreshToken);
-      loadData();
+    if (status === "loading") return;
+    if (status !== "authenticated") {
+      setLoading(false);
+      return;
     }
-  }, [session, tripId]);
+    const s = session as any;
+    if (s?.accessToken) setTokens(s.accessToken, s.refreshToken);
+    loadData();
+  }, [status, session, tripId]);
 
   async function loadData() {
     try {
@@ -58,6 +61,17 @@ export default function ExpensesPage() {
       loadData(); // refresh summary
     } catch (err: any) {
       alert(err.message);
+    }
+  }
+
+  async function handleDelete(expenseId: string) {
+    if (!confirm("Delete this expense?")) return;
+    try {
+      await api.del(`/trips/${tripId}/expenses/${expenseId}`);
+      setExpenses((prev) => prev.filter((e) => e.id !== expenseId));
+      loadData(); // refresh summary
+    } catch (err: any) {
+      alert(err.message || "Failed to delete expense");
     }
   }
 
@@ -172,14 +186,22 @@ export default function ExpensesPage() {
           <p className="py-8 text-center text-gray-400">No expenses recorded yet.</p>
         ) : (
           expenses.map((exp) => (
-            <div key={exp.id} className="flex items-center justify-between rounded-lg border px-4 py-3">
-              <div>
+            <div key={exp.id} className="group flex items-center justify-between rounded-lg border px-4 py-3 hover:bg-gray-50">
+              <div className="flex-1">
                 <p className="text-sm font-medium">{exp.description || exp.category}</p>
                 <p className="text-xs text-gray-400 capitalize">{exp.category} · {exp.date || "—"}</p>
               </div>
-              <p className="font-semibold">
-                {exp.currency} {exp.amount.toFixed(2)}
-              </p>
+              <div className="flex items-center gap-3">
+                <p className="font-semibold whitespace-nowrap">
+                  {exp.currency} {exp.amount.toFixed(2)}
+                </p>
+                <button
+                  onClick={() => handleDelete(exp.id)}
+                  className="rounded px-2 py-1 text-xs text-red-600 hover:bg-red-50 opacity-0 transition-opacity group-hover:opacity-100"
+                >
+                  Delete
+                </button>
+              </div>
             </div>
           ))
         )}

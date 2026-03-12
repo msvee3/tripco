@@ -9,7 +9,7 @@ import type { Memory, SASResponse } from "@/lib/types";
 
 export default function MemoriesPage() {
   const { tripId } = useParams<{ tripId: string }>();
-  const { data: session } = useSession();
+  const { data: session, status } = useSession();
   const [memories, setMemories] = useState<Memory[]>([]);
   const [loading, setLoading] = useState(true);
   const [uploading, setUploading] = useState(false);
@@ -17,12 +17,16 @@ export default function MemoriesPage() {
   const [selected, setSelected] = useState<Memory | null>(null);
 
   useEffect(() => {
-    if (!session?.user) return;
+    // Wait for NextAuth to be fully authenticated before making API calls.
+    if (status === "loading") return;
     
+    if (status !== "authenticated") {
+      setLoading(false);
+      return;
+    }
+
     const s = session as any;
-    if (!s.accessToken) return;
-    
-    setTokens(s.accessToken, s.refreshToken);
+    if (s?.accessToken) setTokens(s.accessToken, s.refreshToken);
 
     (async () => {
       try {
@@ -34,7 +38,7 @@ export default function MemoriesPage() {
         setLoading(false);
       }
     })();
-  }, [session, tripId]);
+  }, [status, session, tripId];
 
   async function handleUpload(e: React.ChangeEvent<HTMLInputElement>) {
     const file = e.target.files?.[0];
@@ -88,22 +92,28 @@ export default function MemoriesPage() {
   }
 
   async function openMedia(m: Memory) {
-    if (!m.fileUrl) return;
+    if (!m.fileUrl) {
+      console.warn("No fileUrl to open");
+      return;
+    }
     // If it's already a full URL (SAS), open directly
     if (m.fileUrl.startsWith("http")) {
       setSelected(m);
       return;
     }
     try {
+      console.log("Fetching read SAS for:", m.fileUrl);
       const res = await api.post<{ readUrl: string }>("/upload/read-sas", {
         container: "media",
         blobName: m.fileUrl,
       });
+      console.log("Got read URL:", (res as any).readUrl);
       setSelected({ ...m, fileUrl: (res as any).readUrl });
     } catch (err: any) {
+      console.error("Failed to open media:", err);
       alert(err.message || "Failed to generate file URL");
     }
-  }
+  
 
   if (loading) {
     return (
