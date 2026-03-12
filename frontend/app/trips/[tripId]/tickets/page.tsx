@@ -190,14 +190,16 @@ export default function TicketsPage() {
       ) : (
         <div className="space-y-2">
           {tickets.map((t) => (
-            <div key={t.id} className="flex items-center gap-4 rounded-lg border px-4 py-3">
-              {typeIcons[t.type] || <FileText className="h-5 w-5 text-gray-400" />}
-              <div className="flex-1">
-                <p className="font-medium">{t.title}</p>
-                <p className="text-xs text-gray-400 capitalize">{t.type} · {t.date || "—"}</p>
-                {t.notes && <p className="mt-0.5 text-sm text-gray-500">{t.notes}</p>}
+            <div key={t.id} className="flex items-center justify-between gap-4 rounded-lg border px-4 py-3 hover:bg-gray-50">
+              <div className="flex items-center gap-4 flex-1">
+                {typeIcons[t.type] || <FileText className="h-5 w-5 text-gray-400" />}
+                <div className="flex-1">
+                  <p className="font-medium">{t.title}</p>
+                  <p className="text-xs text-gray-400 capitalize">{t.type} · {t.date || "—"}</p>
+                  {t.notes && <p className="mt-0.5 text-sm text-gray-500">{t.notes}</p>}
+                </div>
               </div>
-              <div className="flex items-center gap-2">
+              <div className="flex items-center gap-3">
                 {t.fileUrl && (
                   <a href={t.fileUrl} target="_blank" rel="noopener noreferrer" className="text-sm text-brand-600 hover:underline">
                     View
@@ -205,17 +207,19 @@ export default function TicketsPage() {
                 )}
                 <button
                   onClick={() => handleEdit(t)}
-                  className="text-gray-500 hover:text-brand-600 transition-colors"
-                  aria-label="Edit"
+                  className="p-2 text-gray-600 hover:text-brand-600 hover:bg-brand-50 rounded-md transition-colors"
+                  aria-label="Edit ticket"
+                  title="Edit"
                 >
-                  <Edit2 className="h-4 w-4" />
+                  <Edit2 className="h-5 w-5" />
                 </button>
                 <button
                   onClick={() => handleDelete(t.id)}
-                  className="text-gray-500 hover:text-red-600 transition-colors"
-                  aria-label="Delete"
+                  className="p-2 text-gray-600 hover:text-red-600 hover:bg-red-50 rounded-md transition-colors"
+                  aria-label="Delete ticket"
+                  title="Delete"
                 >
-                  <Trash2 className="h-4 w-4" />
+                  <Trash2 className="h-5 w-5" />
                 </button>
               </div>
             </div>
