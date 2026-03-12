@@ -7,7 +7,7 @@ from collections import defaultdict
 from fastapi import APIRouter, Depends, HTTPException
 from fastapi.responses import StreamingResponse
 
-from app.db.cosmos_client import create_item, query_items, upsert_item
+from app.db.cosmos_client import create_item, query_items, upsert_item, delete_item, read_item
 from app.middleware.auth import get_current_user
 from app.models.schemas import (
     CreateExpenseRequest,
@@ -79,6 +79,30 @@ def create_expense(trip_id: str, body: CreateExpenseRequest, user: dict = Depend
     upsert_item("Trips", trip)
 
     return _doc_to_expense(doc)
+
+
+# ── Delete expense ───────────────────────────────────────
+
+@router.delete("/trips/{trip_id}/expenses/{expense_id}", status_code=204)
+def delete_expense(trip_id: str, expense_id: str, user: dict = Depends(get_current_user)):
+    trip = _ensure_trip_member(trip_id, user["id"])
+    
+    # Get the expense to retrieve its amount
+    expense = read_item("TripItems", expense_id, trip_id)
+    if not expense:
+        raise HTTPException(status_code=404, detail="Expense not found")
+    
+    if expense.get("type") != "expense":
+        raise HTTPException(status_code=400, detail="Item is not an expense")
+    
+    # Delete the expense
+    delete_item("TripItems", expense_id, trip_id)
+    
+    # Update trip totals
+    amount = expense.get("amountBase", expense.get("amount", 0))
+    trip["totalExpenses"] = max(0, trip.get("totalExpenses", 0) - amount)
+    trip["updatedAt"] = utcnow()
+    upsert_item("Trips", trip)
 
 
 # ── Expense summary ──────────────────────────────────────
