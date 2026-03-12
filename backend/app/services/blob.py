@@ -55,6 +55,23 @@ def generate_read_sas(
     s = get_settings()
     expiry = datetime.now(timezone.utc) + timedelta(hours=ttl_hours)
 
+    # If a full URL was stored (older records), extract the blob name
+    if blob_name.startswith("http://") or blob_name.startswith("https://"):
+        try:
+            # Expecting format https://<account>.blob.core.windows.net/<container>/<blob_path>
+            parts = blob_name.split(".blob.core.windows.net/")
+            if len(parts) == 2:
+                path = parts[1]
+                # remove any leading container segment if present
+                if path.startswith(f"{container}/"):
+                    blob_name = path[len(container) + 1 :]
+                else:
+                    # If container segment isn't present, use the full path as blob_name
+                    blob_name = path
+        except Exception:
+            # fallback to using provided blob_name as-is
+            pass
+
     sas = generate_blob_sas(
         account_name=s.BLOB_ACCOUNT_NAME,
         account_key=s.BLOB_ACCOUNT_KEY,

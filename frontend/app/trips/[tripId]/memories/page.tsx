@@ -59,10 +59,10 @@ export default function MemoriesPage() {
       });
 
       // 3. Create memory record
-      const blobUrl = sas.uploadUrl.split("?")[0]; // URL without SAS
+      // store the blob name (server expects blobName, not full URL)
       const memory = await api.post<Memory>(`/trips/${tripId}/memories`, {
         type: file.type.startsWith("video") ? "video" : "photo",
-        fileUrl: blobUrl,
+        fileUrl: sas.blobName,
         caption: "",
         date: new Date().toISOString().split("T")[0],
       });
