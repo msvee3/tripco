@@ -113,7 +113,7 @@ export default function MemoriesPage() {
       console.error("Failed to open media:", err);
       alert(err.message || "Failed to generate file URL");
     }
-  
+  }
 
   if (loading) {
     return (
