@@ -75,7 +75,7 @@ export default function TicketsPage() {
   async function handleDelete(id: string) {
     if (!confirm("Delete this ticket?")) return;
     try {
-      await api.delete(`/trips/${tripId}/tickets/${id}`);
+      await api.del(`/trips/${tripId}/tickets/${id}`);
       setTickets((prev) => prev.filter((t) => t.id !== id));
     } catch (err: any) {
       alert(err.message);
