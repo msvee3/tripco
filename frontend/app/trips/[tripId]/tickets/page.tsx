@@ -20,6 +20,12 @@ export default function TicketsPage() {
   const [loading, setLoading] = useState(true);
   const [showForm, setShowForm] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
+  const [formData, setFormData] = useState({
+    type: "flight",
+    title: "",
+    date: "",
+    notes: "",
+  });
 
   useEffect(() => {
     if (session) {
@@ -42,13 +48,12 @@ export default function TicketsPage() {
 
   async function handleAdd(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
-    const form = new FormData(e.currentTarget);
     try {
       const ticketData = {
-        type: form.get("type"),
-        title: form.get("title"),
-        date: form.get("date") || undefined,
-        notes: form.get("notes") || "",
+        type: formData.type,
+        title: formData.title,
+        date: formData.date || undefined,
+        notes: formData.notes || "",
       };
 
       if (editingId) {
@@ -61,7 +66,7 @@ export default function TicketsPage() {
         setTickets((prev) => [...prev, ticket]);
       }
       setShowForm(false);
-      (e.currentTarget as HTMLFormElement).reset();
+      setFormData({ type: "flight", title: "", date: "", notes: "" });
     } catch (err: any) {
       alert(err.message);
     }
@@ -79,6 +84,12 @@ export default function TicketsPage() {
 
   function handleEdit(ticket: Ticket) {
     setEditingId(ticket.id);
+    setFormData({
+      type: ticket.type,
+      title: ticket.title,
+      date: ticket.date || "",
+      notes: ticket.notes || "",
+    });
     setShowForm(true);
   }
 
@@ -90,8 +101,6 @@ export default function TicketsPage() {
     );
   }
 
-  const editingTicket = editingId ? tickets.find((t) => t.id === editingId) : null;
-
   return (
     <div className="mx-auto max-w-3xl px-4 py-8">
       <div className="mb-6 flex items-center justify-between">
@@ -99,6 +108,7 @@ export default function TicketsPage() {
         <button
           onClick={() => {
             setEditingId(null);
+            setFormData({ type: "flight", title: "", date: "", notes: "" });
             setShowForm(!showForm);
           }}
           className="flex items-center gap-1 rounded-lg bg-brand-600 px-4 py-2 text-sm font-medium text-white hover:bg-brand-700"
@@ -112,7 +122,11 @@ export default function TicketsPage() {
           <div className="grid gap-4 sm:grid-cols-3">
             <div>
               <label className="block text-sm font-medium text-gray-700">Type</label>
-              <select name="type" defaultValue={editingTicket?.type || "flight"} className="mt-1 block w-full rounded-md border border-gray-300 px-3 py-2">
+              <select
+                value={formData.type}
+                onChange={(e) => setFormData({ ...formData, type: e.target.value })}
+                className="mt-1 block w-full rounded-md border border-gray-300 px-3 py-2"
+              >
                 <option value="flight">Flight</option>
                 <option value="hotel">Hotel</option>
                 <option value="event">Event</option>
@@ -120,16 +134,32 @@ export default function TicketsPage() {
             </div>
             <div>
               <label className="block text-sm font-medium text-gray-700">Title</label>
-              <input name="title" defaultValue={editingTicket?.title || ""} required className="mt-1 block w-full rounded-md border border-gray-300 px-3 py-2" />
+              <input
+                type="text"
+                value={formData.title}
+                onChange={(e) => setFormData({ ...formData, title: e.target.value })}
+                required
+                className="mt-1 block w-full rounded-md border border-gray-300 px-3 py-2"
+              />
             </div>
             <div>
               <label className="block text-sm font-medium text-gray-700">Date</label>
-              <input name="date" type="date" defaultValue={editingTicket?.date || ""} className="mt-1 block w-full rounded-md border border-gray-300 px-3 py-2" />
+              <input
+                type="date"
+                value={formData.date}
+                onChange={(e) => setFormData({ ...formData, date: e.target.value })}
+                className="mt-1 block w-full rounded-md border border-gray-300 px-3 py-2"
+              />
             </div>
           </div>
           <div>
             <label className="block text-sm font-medium text-gray-700">Notes</label>
-            <input name="notes" defaultValue={editingTicket?.notes || ""} className="mt-1 block w-full rounded-md border border-gray-300 px-3 py-2" />
+            <input
+              type="text"
+              value={formData.notes}
+              onChange={(e) => setFormData({ ...formData, notes: e.target.value })}
+              className="mt-1 block w-full rounded-md border border-gray-300 px-3 py-2"
+            />
           </div>
           <div className="flex gap-2">
             <button type="submit" className="rounded-md bg-brand-600 px-4 py-2 text-sm font-medium text-white hover:bg-brand-700">
@@ -141,6 +171,7 @@ export default function TicketsPage() {
                 onClick={() => {
                   setEditingId(null);
                   setShowForm(false);
+                  setFormData({ type: "flight", title: "", date: "", notes: "" });
                 }}
                 className="rounded-md bg-gray-300 px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-400"
               >
