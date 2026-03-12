@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import { useParams } from "next/navigation";
 import { useSession } from "next-auth/react";
-import { Plus, FileText, Plane, Building2, CalendarDays } from "lucide-react";
+import { Plus, FileText, Plane, Building2, CalendarDays, Edit2, Trash2 } from "lucide-react";
 import { api, setTokens } from "@/lib/api";
 import type { Ticket } from "@/lib/types";
 
@@ -19,6 +19,7 @@ export default function TicketsPage() {
   const [tickets, setTickets] = useState<Ticket[]>([]);
   const [loading, setLoading] = useState(true);
   const [showForm, setShowForm] = useState(false);
+  const [editingId, setEditingId] = useState<string | null>(null);
 
   useEffect(() => {
     if (session) {
@@ -43,17 +44,42 @@ export default function TicketsPage() {
     e.preventDefault();
     const form = new FormData(e.currentTarget);
     try {
-      const ticket = await api.post<Ticket>(`/trips/${tripId}/tickets`, {
+      const ticketData = {
         type: form.get("type"),
         title: form.get("title"),
         date: form.get("date") || undefined,
         notes: form.get("notes") || "",
-      });
-      setTickets((prev) => [...prev, ticket]);
+      };
+
+      if (editingId) {
+        await api.put(`/trips/${tripId}/tickets/${editingId}`, ticketData);
+        const updatedTickets = await api.get<Ticket[]>(`/trips/${tripId}/tickets`);
+        setTickets(updatedTickets);
+        setEditingId(null);
+      } else {
+        const ticket = await api.post<Ticket>(`/trips/${tripId}/tickets`, ticketData);
+        setTickets((prev) => [...prev, ticket]);
+      }
       setShowForm(false);
+      (e.currentTarget as HTMLFormElement).reset();
     } catch (err: any) {
       alert(err.message);
     }
+  }
+
+  async function handleDelete(id: string) {
+    if (!confirm("Delete this ticket?")) return;
+    try {
+      await api.delete(`/trips/${tripId}/tickets/${id}`);
+      setTickets((prev) => prev.filter((t) => t.id !== id));
+    } catch (err: any) {
+      alert(err.message);
+    }
+  }
+
+  function handleEdit(ticket: Ticket) {
+    setEditingId(ticket.id);
+    setShowForm(true);
   }
 
   if (loading) {
@@ -64,12 +90,17 @@ export default function TicketsPage() {
     );
   }
 
+  const editingTicket = editingId ? tickets.find((t) => t.id === editingId) : null;
+
   return (
     <div className="mx-auto max-w-3xl px-4 py-8">
       <div className="mb-6 flex items-center justify-between">
         <h1 className="text-2xl font-bold">Tickets</h1>
         <button
-          onClick={() => setShowForm(!showForm)}
+          onClick={() => {
+            setEditingId(null);
+            setShowForm(!showForm);
+          }}
           className="flex items-center gap-1 rounded-lg bg-brand-600 px-4 py-2 text-sm font-medium text-white hover:bg-brand-700"
         >
           <Plus className="h-4 w-4" /> Add Ticket
@@ -81,7 +112,7 @@ export default function TicketsPage() {
           <div className="grid gap-4 sm:grid-cols-3">
             <div>
               <label className="block text-sm font-medium text-gray-700">Type</label>
-              <select name="type" className="mt-1 block w-full rounded-md border border-gray-300 px-3 py-2">
+              <select name="type" defaultValue={editingTicket?.type || "flight"} className="mt-1 block w-full rounded-md border border-gray-300 px-3 py-2">
                 <option value="flight">Flight</option>
                 <option value="hotel">Hotel</option>
                 <option value="event">Event</option>
@@ -89,20 +120,34 @@ export default function TicketsPage() {
             </div>
             <div>
               <label className="block text-sm font-medium text-gray-700">Title</label>
-              <input name="title" required className="mt-1 block w-full rounded-md border border-gray-300 px-3 py-2" />
+              <input name="title" defaultValue={editingTicket?.title || ""} required className="mt-1 block w-full rounded-md border border-gray-300 px-3 py-2" />
             </div>
             <div>
               <label className="block text-sm font-medium text-gray-700">Date</label>
-              <input name="date" type="date" className="mt-1 block w-full rounded-md border border-gray-300 px-3 py-2" />
+              <input name="date" type="date" defaultValue={editingTicket?.date || ""} className="mt-1 block w-full rounded-md border border-gray-300 px-3 py-2" />
             </div>
           </div>
           <div>
             <label className="block text-sm font-medium text-gray-700">Notes</label>
-            <input name="notes" className="mt-1 block w-full rounded-md border border-gray-300 px-3 py-2" />
+            <input name="notes" defaultValue={editingTicket?.notes || ""} className="mt-1 block w-full rounded-md border border-gray-300 px-3 py-2" />
           </div>
-          <button type="submit" className="rounded-md bg-brand-600 px-4 py-2 text-sm font-medium text-white hover:bg-brand-700">
-            Save
-          </button>
+          <div className="flex gap-2">
+            <button type="submit" className="rounded-md bg-brand-600 px-4 py-2 text-sm font-medium text-white hover:bg-brand-700">
+              {editingId ? "Update" : "Save"}
+            </button>
+            {editingId && (
+              <button
+                type="button"
+                onClick={() => {
+                  setEditingId(null);
+                  setShowForm(false);
+                }}
+                className="rounded-md bg-gray-300 px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-400"
+              >
+                Cancel
+              </button>
+            )}
+          </div>
         </form>
       )}
 
@@ -121,11 +166,27 @@ export default function TicketsPage() {
                 <p className="text-xs text-gray-400 capitalize">{t.type} · {t.date || "—"}</p>
                 {t.notes && <p className="mt-0.5 text-sm text-gray-500">{t.notes}</p>}
               </div>
-              {t.fileUrl && (
-                <a href={t.fileUrl} target="_blank" rel="noopener noreferrer" className="text-sm text-brand-600 hover:underline">
-                  View
-                </a>
-              )}
+              <div className="flex items-center gap-2">
+                {t.fileUrl && (
+                  <a href={t.fileUrl} target="_blank" rel="noopener noreferrer" className="text-sm text-brand-600 hover:underline">
+                    View
+                  </a>
+                )}
+                <button
+                  onClick={() => handleEdit(t)}
+                  className="text-gray-500 hover:text-brand-600 transition-colors"
+                  aria-label="Edit"
+                >
+                  <Edit2 className="h-4 w-4" />
+                </button>
+                <button
+                  onClick={() => handleDelete(t.id)}
+                  className="text-gray-500 hover:text-red-600 transition-colors"
+                  aria-label="Delete"
+                >
+                  <Trash2 className="h-4 w-4" />
+                </button>
+              </div>
             </div>
           ))}
         </div>

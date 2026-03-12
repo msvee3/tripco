@@ -2,7 +2,7 @@
 
 from fastapi import APIRouter, Depends, HTTPException
 
-from app.db.cosmos_client import create_item, query_items
+from app.db.cosmos_client import create_item, query_items, upsert_item, delete_item
 from app.middleware.auth import get_current_user
 from app.models.schemas import CreateTicketRequest, TicketOut, new_id, utcnow
 
@@ -51,6 +51,51 @@ def create_ticket(trip_id: str, body: CreateTicketRequest, user: dict = Depends(
     }
     create_item("TripItems", doc)
     return _to_out(doc)
+
+
+@router.put("/trips/{trip_id}/tickets/{ticket_id}", response_model=TicketOut)
+def update_ticket(trip_id: str, ticket_id: str, body: CreateTicketRequest, user: dict = Depends(get_current_user)):
+    _ensure_trip_member(trip_id, user["id"])
+    
+    # Get existing ticket
+    tickets = query_items(
+        "TripItems",
+        "SELECT * FROM c WHERE c.id = @id AND c.tripId = @tid",
+        [{"name": "@id", "value": ticket_id}, {"name": "@tid", "value": trip_id}],
+        partition_key=trip_id,
+    )
+    if not tickets:
+        raise HTTPException(status_code=404, detail="Ticket not found")
+    
+    ticket = tickets[0]
+    # Update the ticket
+    ticket["ticketType"] = body.type.value
+    ticket["title"] = body.title
+    ticket["fileUrl"] = body.fileUrl
+    ticket["date"] = body.date.isoformat() if body.date else None
+    ticket["notes"] = body.notes
+    ticket["updatedAt"] = utcnow()
+    ticket["version"] = ticket.get("version", 1) + 1
+    
+    upsert_item("TripItems", ticket)
+    return _to_out(ticket)
+
+
+@router.delete("/trips/{trip_id}/tickets/{ticket_id}", status_code=204)
+def delete_ticket(trip_id: str, ticket_id: str, user: dict = Depends(get_current_user)):
+    _ensure_trip_member(trip_id, user["id"])
+    
+    # Get existing ticket
+    tickets = query_items(
+        "TripItems",
+        "SELECT * FROM c WHERE c.id = @id AND c.tripId = @tid",
+        [{"name": "@id", "value": ticket_id}, {"name": "@tid", "value": trip_id}],
+        partition_key=trip_id,
+    )
+    if not tickets:
+        raise HTTPException(status_code=404, detail="Ticket not found")
+    
+    delete_item("TripItems", ticket_id, trip_id)
 
 
 def _to_out(d: dict) -> TicketOut:
