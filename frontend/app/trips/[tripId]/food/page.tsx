@@ -9,17 +9,23 @@ import type { FoodLog } from "@/lib/types";
 
 export default function FoodPage() {
   const { tripId } = useParams<{ tripId: string }>();
-  const { data: session } = useSession();
+  const { data: session, status } = useSession();
   const [logs, setLogs] = useState<FoodLog[]>([]);
   const [loading, setLoading] = useState(true);
   const [showForm, setShowForm] = useState(false);
 
   useEffect(() => {
-    if (!session?.user) return;
-    
+    if (status !== "authenticated") {
+      if (status === "unauthenticated") setLoading(false);
+      return;
+    }
+
     const s = session as any;
-    if (!s.accessToken) return;
-    
+    if (!s?.accessToken) {
+      setLoading(false);
+      return;
+    }
+
     setTokens(s.accessToken, s.refreshToken);
 
     (async () => {
