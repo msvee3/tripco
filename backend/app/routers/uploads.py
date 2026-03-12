@@ -7,8 +7,8 @@ import uuid
 from fastapi import APIRouter, Depends
 
 from app.middleware.auth import get_current_user
-from app.models.schemas import SASRequest, SASResponse
-from app.services.blob import generate_upload_sas
+from app.models.schemas import SASRequest, SASResponse, ReadSASRequest, ReadSASResponse
+from app.services.blob import generate_upload_sas, generate_read_sas
 
 router = APIRouter(prefix="/upload", tags=["upload"])
 
@@ -28,3 +28,11 @@ def get_upload_sas(body: SASRequest, user: dict = Depends(get_current_user)):
     )
 
     return SASResponse(uploadUrl=url, blobName=blob_name, expiresAt=expires_at)
+
+
+@router.post("/read-sas", response_model=ReadSASResponse)
+def get_read_sas(body: ReadSASRequest, user: dict = Depends(get_current_user)):
+    """Generate a read-only SAS URL for an existing blob (container + blobName)."""
+    container = body.container if body.container in ("media", "tickets") else "media"
+    url = generate_read_sas(container=container, blob_name=body.blobName, ttl_hours=24)
+    return ReadSASResponse(readUrl=url)

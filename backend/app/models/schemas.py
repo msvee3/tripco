@@ -307,3 +307,12 @@ class SASResponse(BaseModel):
     uploadUrl: str
     blobName: str
     expiresAt: str
+
+
+class ReadSASRequest(BaseModel):
+    container: str
+    blobName: str
+
+
+class ReadSASResponse(BaseModel):
+    readUrl: str
