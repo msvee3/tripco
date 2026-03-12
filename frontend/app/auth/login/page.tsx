@@ -37,7 +37,7 @@ export default function LoginPage() {
       <div className="w-full max-w-md space-y-6 rounded-xl border p-8 shadow-sm">
         <div className="text-center">
           <h1 className="text-2xl font-bold">Welcome back</h1>
-          <p className="mt-1 text-sm text-gray-500">Log in to your Travel Companion account</p>
+          <p className="mt-1 text-sm text-gray-500">Log in to your Tripco account</p>
         </div>
 
         {error && (

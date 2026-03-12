@@ -1,0 +1,16 @@
+#!/bin/sh
+. "$(dirname "$0")/_/husky.sh"
+
+# Run frontend build to catch syntax errors
+echo "🔍 Validating frontend build..."
+cd frontend
+npm run build 2>&1
+BUILD_EXIT=$?
+
+if [ $BUILD_EXIT -ne 0 ]; then
+  echo "❌ Build failed! Fix syntax errors before committing."
+  exit 1
+fi
+
+echo "✅ Build validation passed!"
+exit 0

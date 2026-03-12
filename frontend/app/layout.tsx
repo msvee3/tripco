@@ -2,11 +2,12 @@ import type { Metadata, Viewport } from "next";
 import "@/styles/globals.css";
 import { Providers } from "@/components/Providers";
 import { Header } from "@/components/Header";
+import { Footer } from "@/components/Footer";
 import { PWAInit } from "@/components/PWAInit";
 import { SyncStatus } from "@/components/SyncStatus";
 
 export const metadata: Metadata = {
-  title: "Travel Companion",
+  title: "Tripco",
   description: "Your personal travel journal, expense tracker & photo album.",
   manifest: "/manifest.json",
 };
@@ -26,6 +27,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           <main className="flex-1">{children}</main>
           <SyncStatus />
           <PWAInit />
+          <Footer />
         </Providers>
       </body>
     </html>

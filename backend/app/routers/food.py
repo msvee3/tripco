@@ -2,9 +2,9 @@
 
 from fastapi import APIRouter, Depends, HTTPException
 
-from app.db.cosmos_client import create_item, query_items, read_item, delete_item
+from app.db.cosmos_client import create_item, query_items, read_item, delete_item, upsert_item
 from app.middleware.auth import get_current_user
-from app.models.schemas import CreateFoodLogRequest, FoodLogOut, new_id, utcnow
+from app.models.schemas import CreateFoodLogRequest, UpdateFoodLogRequest, FoodLogOut, new_id, utcnow
 from app.services.blob import generate_read_sas
 
 router = APIRouter(tags=["food"])
@@ -53,6 +53,30 @@ def create_food_log(trip_id: str, body: CreateFoodLogRequest, user: dict = Depen
     }
     create_item("TripItems", doc)
     return _to_out(doc)
+
+
+@router.patch("/trips/{trip_id}/food/{food_id}", response_model=FoodLogOut)
+def update_food_log(trip_id: str, food_id: str, body: UpdateFoodLogRequest, user: dict = Depends(get_current_user)):
+    _ensure_trip_member(trip_id, user["id"])
+    food = read_item("TripItems", food_id, trip_id)
+    if not food:
+        raise HTTPException(status_code=404, detail="Food log not found")
+    if food.get("type") != "food":
+        raise HTTPException(status_code=400, detail="Item is not a food log")
+    if body.name is not None:
+        food["name"] = body.name
+    if body.location is not None:
+        food["location"] = body.location
+    if body.rating is not None:
+        food["rating"] = body.rating
+    if body.notes is not None:
+        food["notes"] = body.notes
+    if body.date is not None:
+        food["date"] = body.date.isoformat()
+    food["updatedAt"] = utcnow()
+    food["version"] = food.get("version", 1) + 1
+    upsert_item("TripItems", food)
+    return _to_out(food)
 
 
 @router.delete("/trips/{trip_id}/food/{food_id}", status_code=204)

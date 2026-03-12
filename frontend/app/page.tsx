@@ -54,7 +54,7 @@ export default function LandingPage() {
       {/* Hero */}
       <section className="flex flex-col items-center justify-center gap-6 px-4 py-24 text-center">
         <h1 className="text-balance text-4xl font-extrabold tracking-tight sm:text-6xl">
-          Your <span className="text-brand-600">Travel Companion</span>
+          Your <span className="text-brand-600">Tripco</span>
         </h1>
         <p className="max-w-xl text-lg text-gray-600">
           Plan trips, capture memories, track expenses, and share experiences — all in one

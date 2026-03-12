@@ -1,6 +1,6 @@
 {
-  "name": "Travel Companion",
-  "short_name": "TravelPal",
+  "name": "Tripco",
+  "short_name": "Tripco",
   "description": "Your personal travel journal, expense tracker & photo album.",
   "start_url": "/dashboard",
   "display": "standalone",

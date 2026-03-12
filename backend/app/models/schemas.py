@@ -222,6 +222,14 @@ class CreateFoodLogRequest(BaseModel):
     date: _dt.date | None = None
 
 
+class UpdateFoodLogRequest(BaseModel):
+    name: str | None = None
+    location: str | None = None
+    rating: float | None = Field(default=None, ge=0, le=5)
+    notes: str | None = None
+    date: _dt.date | None = None
+
+
 class FoodLogOut(BaseModel):
     id: str
     tripId: str

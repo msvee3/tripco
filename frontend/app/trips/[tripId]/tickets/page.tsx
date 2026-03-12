@@ -15,7 +15,7 @@ const typeIcons: Record<string, React.ReactNode> = {
 
 export default function TicketsPage() {
   const { tripId } = useParams<{ tripId: string }>();
-  const { data: session } = useSession();
+  const { data: session, status } = useSession();
   const fileRef = useRef<HTMLInputElement>(null);
   const [tickets, setTickets] = useState<Ticket[]>([]);
   const [loading, setLoading] = useState(true);
@@ -31,12 +31,10 @@ export default function TicketsPage() {
   });
 
   useEffect(() => {
-    if (!session?.user) return;
-    
+    if (status !== "authenticated") return;
+
     const s = session as any;
-    if (!s.accessToken) return;
-    
-    setTokens(s.accessToken, s.refreshToken);
+    if (s?.accessToken) setTokens(s.accessToken, s.refreshToken);
 
     (async () => {
       try {
@@ -48,7 +46,7 @@ export default function TicketsPage() {
         setLoading(false);
       }
     })();
-  }, [session, tripId]);
+  }, [status, session, tripId]);
 
   async function handleFileUpload(e: React.ChangeEvent<HTMLInputElement>) {
     const file = e.target.files?.[0];
