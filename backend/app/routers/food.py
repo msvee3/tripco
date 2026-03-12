@@ -2,7 +2,7 @@
 
 from fastapi import APIRouter, Depends, HTTPException
 
-from app.db.cosmos_client import create_item, query_items
+from app.db.cosmos_client import create_item, query_items, read_item, delete_item
 from app.middleware.auth import get_current_user
 from app.models.schemas import CreateFoodLogRequest, FoodLogOut, new_id, utcnow
 from app.services.blob import generate_read_sas
@@ -53,6 +53,21 @@ def create_food_log(trip_id: str, body: CreateFoodLogRequest, user: dict = Depen
     }
     create_item("TripItems", doc)
     return _to_out(doc)
+
+
+@router.delete("/trips/{trip_id}/food/{food_id}", status_code=204)
+def delete_food_log(trip_id: str, food_id: str, user: dict = Depends(get_current_user)):
+    _ensure_trip_member(trip_id, user["id"])
+    
+    # Verify food log exists
+    food = read_item("TripItems", food_id, trip_id)
+    if not food:
+        raise HTTPException(status_code=404, detail="Food log not found")
+    
+    if food.get("type") != "food":
+        raise HTTPException(status_code=400, detail="Item is not a food log")
+    
+    delete_item("TripItems", food_id, trip_id)
 
 
 def _to_out(d: dict) -> FoodLogOut:

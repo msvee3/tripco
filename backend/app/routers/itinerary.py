@@ -2,7 +2,7 @@
 
 from fastapi import APIRouter, Depends, HTTPException
 
-from app.db.cosmos_client import create_item, query_items, read_item, upsert_item
+from app.db.cosmos_client import create_item, query_items, read_item, upsert_item, delete_item
 from app.middleware.auth import get_current_user
 from app.models.schemas import CreateItineraryItemRequest, ItineraryItemOut, new_id, utcnow
 
@@ -77,6 +77,16 @@ def update_itinerary_item(
     })
     upsert_item("TripItems", doc)
     return _to_out(doc)
+
+
+@router.delete("/trips/{trip_id}/itinerary/{item_id}", status_code=204)
+def delete_itinerary_item(trip_id: str, item_id: str, user: dict = Depends(get_current_user)):
+    _ensure_trip_member(trip_id, user["id"])
+    doc = read_item("TripItems", item_id, trip_id)
+    if not doc or doc.get("type") != "itinerary":
+        raise HTTPException(status_code=404, detail="Itinerary item not found")
+    
+    delete_item("TripItems", item_id, trip_id)
 
 
 def _to_out(d: dict) -> ItineraryItemOut:
