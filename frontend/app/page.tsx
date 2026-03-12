@@ -1,7 +1,31 @@
+"use client";
+
 import Link from "next/link";
+import { useEffect } from "react";
+import { useSession } from "next-auth/react";
+import { useRouter } from "next/navigation";
 import { MapPin, Camera, DollarSign, Wifi, WifiOff } from "lucide-react";
 
 export default function LandingPage() {
+  const { data: session, status } = useSession();
+  const router = useRouter();
+
+  useEffect(() => {
+    if (status === "authenticated" && session) {
+      router.push("/dashboard");
+    }
+  }, [status, session, router]);
+
+  // Show nothing while checking auth status
+  if (status === "loading") {
+    return <div className="flex items-center justify-center min-h-screen">Loading...</div>;
+  }
+
+  // If authenticated, don't show landing page (useEffect will redirect)
+  if (status === "authenticated") {
+    return null;
+  }
+
   const features = [
     {
       icon: <MapPin className="h-8 w-8 text-brand-500" />,
