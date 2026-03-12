@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import { useParams } from "next/navigation";
 import { useSession } from "next-auth/react";
-import { Plus, FileText, Plane, Building2, CalendarDays, Edit2, Trash2 } from "lucide-react";
+import { Plus, FileText, Plane, Building2, CalendarDays } from "lucide-react";
 import { api, setTokens } from "@/lib/api";
 import type { Ticket } from "@/lib/types";
 
