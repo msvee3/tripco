@@ -1,11 +1,11 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useParams } from "next/navigation";
 import { useSession } from "next-auth/react";
-import { Plus, FileText, Plane, Building2, CalendarDays } from "lucide-react";
+import { Plus, FileText, Plane, Building2, CalendarDays, Upload, X } from "lucide-react";
 import { api, setTokens } from "@/lib/api";
-import type { Ticket } from "@/lib/types";
+import type { Ticket, SASResponse } from "@/lib/types";
 
 const typeIcons: Record<string, React.ReactNode> = {
   flight: <Plane className="h-5 w-5 text-blue-500" />,
@@ -16,8 +16,10 @@ const typeIcons: Record<string, React.ReactNode> = {
 export default function TicketsPage() {
   const { tripId } = useParams<{ tripId: string }>();
   const { data: session } = useSession();
+  const fileRef = useRef<HTMLInputElement>(null);
   const [tickets, setTickets] = useState<Ticket[]>([]);
   const [loading, setLoading] = useState(true);
+  const [uploading, setUploading] = useState(false);
   const [showForm, setShowForm] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
   const [formData, setFormData] = useState({
@@ -25,6 +27,7 @@ export default function TicketsPage() {
     title: "",
     date: "",
     notes: "",
+    fileUrl: "",
   });
 
   useEffect(() => {
@@ -34,6 +37,39 @@ export default function TicketsPage() {
       loadTickets();
     }
   }, [session, tripId]);
+
+  async function handleFileUpload(e: React.ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    setUploading(true);
+
+    try {
+      // 1. Get SAS URL
+      const sas = await api.post<SASResponse>("/upload/sas", {
+        filename: file.name,
+        contentType: file.type,
+        container: "tickets",
+      });
+
+      // 2. Direct upload to Blob
+      await fetch(sas.uploadUrl, {
+        method: "PUT",
+        headers: {
+          "x-ms-blob-type": "BlockBlob",
+          "Content-Type": file.type,
+        },
+        body: file,
+      });
+
+      // 3. Store blob name (not full URL)
+      setFormData((prev) => ({ ...prev, fileUrl: sas.blobName }));
+    } catch (err: any) {
+      alert(err.message || "File upload failed");
+    } finally {
+      setUploading(false);
+      if (fileRef.current) fileRef.current.value = "";
+    }
+  }
 
   async function loadTickets() {
     try {
@@ -54,6 +90,7 @@ export default function TicketsPage() {
         title: formData.title,
         date: formData.date || undefined,
         notes: formData.notes || "",
+        fileUrl: formData.fileUrl || undefined,
       };
 
       if (editingId) {
@@ -66,7 +103,7 @@ export default function TicketsPage() {
         setTickets((prev) => [...prev, ticket]);
       }
       setShowForm(false);
-      setFormData({ type: "flight", title: "", date: "", notes: "" });
+      setFormData({ type: "flight", title: "", date: "", notes: "", fileUrl: "" });
     } catch (err: any) {
       alert(err.message);
     }
@@ -89,6 +126,7 @@ export default function TicketsPage() {
       title: ticket.title,
       date: ticket.date || "",
       notes: ticket.notes || "",
+      fileUrl: ticket.fileUrl || "",
     });
     setShowForm(true);
   }
@@ -108,7 +146,7 @@ export default function TicketsPage() {
         <button
           onClick={() => {
             setEditingId(null);
-            setFormData({ type: "flight", title: "", date: "", notes: "" });
+            setFormData({ type: "flight", title: "", date: "", notes: "", fileUrl: "" });
             setShowForm(!showForm);
           }}
           className="flex items-center gap-1 rounded-lg bg-brand-600 px-4 py-2 text-sm font-medium text-white hover:bg-brand-700"
@@ -161,6 +199,40 @@ export default function TicketsPage() {
               className="mt-1 block w-full rounded-md border border-gray-300 px-3 py-2"
             />
           </div>
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-2">Attachment</label>
+            <div className="flex items-center gap-2">
+              <input
+                ref={fileRef}
+                type="file"
+                onChange={handleFileUpload}
+                disabled={uploading}
+                className="hidden"
+              />
+              <button
+                type="button"
+                onClick={() => fileRef.current?.click()}
+                disabled={uploading}
+                className="flex items-center gap-2 rounded-md border border-gray-300 px-3 py-2 text-sm hover:bg-gray-50 disabled:opacity-50"
+              >
+                <Upload className="h-4 w-4" />
+                {uploading ? "Uploading..." : "Choose File"}
+              </button>
+              {formData.fileUrl && (
+                <div className="flex items-center gap-2 flex-1">
+                  <FileText className="h-4 w-4 text-blue-500" />
+                  <span className="text-sm text-gray-700 truncate">{formData.fileUrl.split("/").pop()}</span>
+                  <button
+                    type="button"
+                    onClick={() => setFormData({ ...formData, fileUrl: "" })}
+                    className="ml-auto text-gray-400 hover:text-red-500"
+                  >
+                    <X className="h-4 w-4" />
+                  </button>
+                </div>
+              )}
+            </div>
+          </div>
           <div className="flex gap-2">
             <button type="submit" className="rounded-md bg-brand-600 px-4 py-2 text-sm font-medium text-white hover:bg-brand-700">
               {editingId ? "Update" : "Save"}
@@ -171,7 +243,7 @@ export default function TicketsPage() {
                 onClick={() => {
                   setEditingId(null);
                   setShowForm(false);
-                  setFormData({ type: "flight", title: "", date: "", notes: "" });
+                  setFormData({ type: "flight", title: "", date: "", notes: "", fileUrl: "" });
                 }}
                 className="rounded-md bg-gray-300 px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-400"
               >
