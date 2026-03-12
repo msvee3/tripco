@@ -87,6 +87,24 @@ export default function MemoriesPage() {
     }
   }
 
+  async function openMedia(m: Memory) {
+    if (!m.fileUrl) return;
+    // If it's already a full URL (SAS), open directly
+    if (m.fileUrl.startsWith("http")) {
+      setSelected(m);
+      return;
+    }
+    try {
+      const res = await api.post<{ readUrl: string }>("/upload/read-sas", {
+        container: "media",
+        blobName: m.fileUrl,
+      });
+      setSelected({ ...m, fileUrl: (res as any).readUrl });
+    } catch (err: any) {
+      alert(err.message || "Failed to generate file URL");
+    }
+  }
+
   if (loading) {
     return (
       <div className="flex h-64 items-center justify-center">
@@ -132,12 +150,12 @@ export default function MemoriesPage() {
                       src={m.fileUrl}
                       className="h-48 w-full object-cover cursor-pointer"
                       controls={false}
-                      onClick={() => setSelected(m)}
+                      onClick={() => openMedia(m)}
                     />
                   </div>
                 ) : (
                   <button
-                    onClick={() => setSelected(m)}
+                    onClick={() => openMedia(m)}
                     className="block w-full p-0"
                     aria-label={m.caption || "Open image"}
                   >
