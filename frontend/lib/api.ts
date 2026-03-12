@@ -89,16 +89,22 @@ export async function apiFetch<T = any>(
 
   if (_accessToken) {
     headers["Authorization"] = `Bearer ${_accessToken}`;
+    console.log("[API]", path, "- Token present");
+  } else {
+    console.warn("[API]", path, "- No access token!");
   }
 
   const res = await fetch(url, { ...options, headers });
 
   // Auto-refresh on 401
   if (res.status === 401 && retry) {
+    console.warn("[API] Got 401 - attempting refresh");
     const refreshed = await refreshAccessToken();
     if (refreshed) {
+      console.log("[API] Token refreshed - retrying request");
       return apiFetch<T>(path, options, false);
     }
+    console.error("[API] Refresh failed - redirecting to login");
     clearTokens();
     if (typeof window !== "undefined") {
       window.location.href = "/auth/login";

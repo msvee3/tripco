@@ -23,8 +23,16 @@ export default function ExpensesPage() {
       setLoading(false);
       return;
     }
+    
+    // Always set tokens from NextAuth session before API calls
     const s = session as any;
-    if (s?.accessToken) setTokens(s.accessToken, s.refreshToken);
+    if (s?.accessToken) {
+      setTokens(s.accessToken, s.refreshToken);
+      console.log("[Expenses] Tokens set from NextAuth session");
+    } else {
+      console.warn("[Expenses] No accessToken in NextAuth session");
+    }
+    
     loadData();
   }, [status, session, tripId]);
 

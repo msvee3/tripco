@@ -25,15 +25,22 @@ export default function MemoriesPage() {
       return;
     }
 
+    // Always set tokens from NextAuth session before API calls
     const s = session as any;
-    if (s?.accessToken) setTokens(s.accessToken, s.refreshToken);
+    if (s?.accessToken) {
+      setTokens(s.accessToken, s.refreshToken);
+      console.log("[Memories] Tokens set from NextAuth session");
+    } else {
+      console.warn("[Memories] No accessToken in NextAuth session");
+    }
 
     (async () => {
       try {
+        console.log("[Memories] Fetching memories for trip:", tripId);
         const data = await api.get<Memory[]>(`/trips/${tripId}/memories`);
         setMemories(data);
       } catch (err: any) {
-        console.error("Failed to load memories:", err);
+        console.error("[Memories] Failed to load memories:", err);
       } finally {
         setLoading(false);
       }
