@@ -14,6 +14,7 @@ export default function MemoriesPage() {
   const [loading, setLoading] = useState(true);
   const [uploading, setUploading] = useState(false);
   const fileRef = useRef<HTMLInputElement>(null);
+  const [selected, setSelected] = useState<Memory | null>(null);
 
   useEffect(() => {
     if (!session?.user) return;
@@ -126,11 +127,22 @@ export default function MemoriesPage() {
             >
               {m.fileUrl ? (
                 m.type === "video" ? (
-                  <video src={m.fileUrl} className="h-48 w-full object-cover" controls />
+                  <div className="h-48 w-full">
+                    <video
+                      src={m.fileUrl}
+                      className="h-48 w-full object-cover cursor-pointer"
+                      controls={false}
+                      onClick={() => setSelected(m)}
+                    />
+                  </div>
                 ) : (
-                  <a href={m.fileUrl} target="_blank" rel="noopener noreferrer">
+                  <button
+                    onClick={() => setSelected(m)}
+                    className="block w-full p-0"
+                    aria-label={m.caption || "Open image"}
+                  >
                     <img src={m.thumbnailUrl || m.fileUrl} alt={m.caption} className="h-48 w-full object-cover" />
-                  </a>
+                  </button>
                 )
               ) : (
                 <div className="flex h-48 items-center justify-center bg-gray-100 text-gray-400">
@@ -168,6 +180,34 @@ export default function MemoriesPage() {
           ))}
         </div>
       )}
+
+        {/* Lightbox modal */}
+        {selected && (
+          <div
+            role="dialog"
+            aria-modal="true"
+            className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 p-4"
+            onClick={() => setSelected(null)}
+          >
+            <div className="relative max-h-full max-w-[90%]" onClick={(e) => e.stopPropagation()}>
+              <button
+                onClick={() => setSelected(null)}
+                className="absolute right-0 top-0 m-2 rounded bg-black/60 p-2 text-white hover:bg-black/80"
+                aria-label="Close"
+              >
+                ✕
+              </button>
+
+              {selected.type === "video" ? (
+                <video src={selected.fileUrl} controls className="max-h-[80vh] w-auto" />
+              ) : (
+                <img src={selected.fileUrl} alt={selected.caption} className="max-h-[80vh] w-auto object-contain" />
+              )}
+
+              {selected.caption && <p className="mt-2 text-center text-sm text-white">{selected.caption}</p>}
+            </div>
+          </div>
+        )}
     </div>
   );
 }
