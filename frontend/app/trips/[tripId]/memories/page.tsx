@@ -16,23 +16,24 @@ export default function MemoriesPage() {
   const fileRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
-    if (session) {
-      const s = session as any;
-      if (s.accessToken) setTokens(s.accessToken, s.refreshToken);
-      loadMemories();
-    }
-  }, [session, tripId]);
+    if (!session?.user) return;
+    
+    const s = session as any;
+    if (!s.accessToken) return;
+    
+    setTokens(s.accessToken, s.refreshToken);
 
-  async function loadMemories() {
-    try {
-      const data = await api.get<Memory[]>(`/trips/${tripId}/memories`);
-      setMemories(data);
-    } catch {
-      // Offline fallback later
-    } finally {
-      setLoading(false);
-    }
-  }
+    (async () => {
+      try {
+        const data = await api.get<Memory[]>(`/trips/${tripId}/memories`);
+        setMemories(data);
+      } catch (err: any) {
+        console.error("Failed to load memories:", err);
+      } finally {
+        setLoading(false);
+      }
+    })();
+  }, [session, tripId]);
 
   async function handleUpload(e: React.ChangeEvent<HTMLInputElement>) {
     const file = e.target.files?.[0];

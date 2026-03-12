@@ -15,23 +15,24 @@ export default function FoodPage() {
   const [showForm, setShowForm] = useState(false);
 
   useEffect(() => {
-    if (session) {
-      const s = session as any;
-      if (s.accessToken) setTokens(s.accessToken, s.refreshToken);
-      loadLogs();
-    }
-  }, [session, tripId]);
+    if (!session?.user) return;
+    
+    const s = session as any;
+    if (!s.accessToken) return;
+    
+    setTokens(s.accessToken, s.refreshToken);
 
-  async function loadLogs() {
-    try {
-      const data = await api.get<FoodLog[]>(`/trips/${tripId}/food`);
-      setLogs(data);
-    } catch {
-      // offline
-    } finally {
-      setLoading(false);
-    }
-  }
+    (async () => {
+      try {
+        const data = await api.get<FoodLog[]>(`/trips/${tripId}/food`);
+        setLogs(data);
+      } catch (err: any) {
+        console.error("Failed to load food logs:", err);
+      } finally {
+        setLoading(false);
+      }
+    })();
+  }, [session, tripId]);
 
   async function handleAdd(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();

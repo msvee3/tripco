@@ -31,11 +31,23 @@ export default function TicketsPage() {
   });
 
   useEffect(() => {
-    if (session) {
-      const s = session as any;
-      if (s.accessToken) setTokens(s.accessToken, s.refreshToken);
-      loadTickets();
-    }
+    if (!session?.user) return;
+    
+    const s = session as any;
+    if (!s.accessToken) return;
+    
+    setTokens(s.accessToken, s.refreshToken);
+
+    (async () => {
+      try {
+        const data = await api.get<Ticket[]>(`/trips/${tripId}/tickets`);
+        setTickets(data);
+      } catch (err: any) {
+        console.error("Failed to load tickets:", err);
+      } finally {
+        setLoading(false);
+      }
+    })();
   }, [session, tripId]);
 
   async function handleFileUpload(e: React.ChangeEvent<HTMLInputElement>) {
@@ -68,17 +80,6 @@ export default function TicketsPage() {
     } finally {
       setUploading(false);
       if (fileRef.current) fileRef.current.value = "";
-    }
-  }
-
-  async function loadTickets() {
-    try {
-      const data = await api.get<Ticket[]>(`/trips/${tripId}/tickets`);
-      setTickets(data);
-    } catch {
-      // offline
-    } finally {
-      setLoading(false);
     }
   }
 
