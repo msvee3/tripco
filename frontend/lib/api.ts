@@ -41,14 +41,20 @@ export function hydrateRefreshToken() {
  * Restores user session across browser sessions (persistent login).
  */
 export async function persistentHydrate(): Promise<void> {
-  hydrateRefreshToken();
-  if (_refreshToken) {
-    try {
-      await refreshAccessToken();
-    } catch (err) {
-      // Refresh failed; user will need to login again
-      clearTokens();
+  try {
+    hydrateRefreshToken();
+    if (_refreshToken) {
+      const success = await refreshAccessToken();
+      if (!success) {
+        console.warn("Failed to refresh token on app startup");
+        clearTokens();
+      } else {
+        console.log("Session restored from persistent token");
+      }
     }
+  } catch (err) {
+    console.error("Persistent hydration error:", err);
+    clearTokens();
   }
 }
 
