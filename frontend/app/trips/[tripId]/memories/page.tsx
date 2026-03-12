@@ -199,9 +199,9 @@ export default function MemoriesPage() {
               </button>
 
               {selected.type === "video" ? (
-                <video src={selected.fileUrl} controls className="max-h-[80vh] w-auto" />
+                <video src={selected.fileUrl ?? undefined} controls className="max-h-[80vh] w-auto" />
               ) : (
-                <img src={selected.fileUrl} alt={selected.caption} className="max-h-[80vh] w-auto object-contain" />
+                <img src={selected.fileUrl ?? undefined} alt={selected.caption ?? ""} className="max-h-[80vh] w-auto object-contain" />
               )}
 
               {selected.caption && <p className="mt-2 text-center text-sm text-white">{selected.caption}</p>}
