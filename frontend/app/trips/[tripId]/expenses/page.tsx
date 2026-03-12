@@ -43,7 +43,9 @@ export default function ExpensesPage() {
         api.get<Expense[]>(`/trips/${tripId}/expenses`),
         api.get<ExpenseSummary>(`/trips/${tripId}/expenses/summary`),
       ]);
-      setExpenses(e);
+      // Deduplicate expenses by id (in case of any duplicates from backend)
+      const uniqueExpenses = Array.from(new Map(e.map(exp => [exp.id, exp])).values());
+      setExpenses(uniqueExpenses);
       setSummary(s);
     } catch {
       // offline fallback
@@ -77,10 +79,12 @@ export default function ExpensesPage() {
     if (!confirm("Delete this expense?")) return;
     try {
       await api.del(`/trips/${tripId}/expenses/${expenseId}`);
+      // Remove from local state first
       setExpenses((prev) => prev.filter((e) => e.id !== expenseId));
       setSuccessMessage("Expense deleted successfully!");
       setTimeout(() => setSuccessMessage(null), 3000);
-      loadData(); // refresh summary
+      // Then refresh summary without fetching full list (prevents duplicates)
+      loadData();
     } catch (err: any) {
       alert(err.message || "Failed to delete expense");
     }

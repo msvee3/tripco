@@ -59,16 +59,36 @@ export async function persistentHydrate(): Promise<void> {
 }
 
 async function refreshAccessToken(): Promise<boolean> {
-  if (!_refreshToken) return false;
+  if (!_refreshToken) {
+    console.warn("[API] No refresh token available");
+    return false;
+  }
   try {
+    console.log("[API] Refreshing access token...");
     const res = await fetch(`${API_BASE}/auth/refresh?refresh_token=${encodeURIComponent(_refreshToken)}`, {
       method: "POST",
     });
-    if (!res.ok) return false;
+    if (!res.ok) {
+      console.error("[API] Refresh failed with status:", res.status);
+      return false;
+    }
     const data = await res.json();
-    setTokens(data.access_token, data.refresh_token);
+    console.log("[API] Refresh response keys:", Object.keys(data));
+    
+    // Handle both snake_case and camelCase response keys
+    const accessToken = data.access_token || data.accessToken;
+    const refreshToken = data.refresh_token || data.refreshToken;
+    
+    if (!accessToken) {
+      console.error("[API] Refresh response has no access token!", data);
+      return false;
+    }
+    
+    setTokens(accessToken, refreshToken || _refreshToken);
+    console.log("[API] Access token refreshed successfully");
     return true;
-  } catch {
+  } catch (err) {
+    console.error("[API] Refresh error:", err);
     return false;
   }
 }

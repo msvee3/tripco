@@ -29,7 +29,7 @@ export default function MemoriesPage() {
     const s = session as any;
     if (s?.accessToken) {
       setTokens(s.accessToken, s.refreshToken);
-      console.log("[Memories] Tokens set from NextAuth session");
+      console.log("[Memories] Tokens set from NextAuth session (will auto-refresh on 401 if needed)");
     } else {
       console.warn("[Memories] No accessToken in NextAuth session");
     }
