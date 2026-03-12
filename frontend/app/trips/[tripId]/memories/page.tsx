@@ -38,7 +38,7 @@ export default function MemoriesPage() {
         setLoading(false);
       }
     })();
-  }, [status, session, tripId];
+  }, [status, session, tripId]);
 
   async function handleUpload(e: React.ChangeEvent<HTMLInputElement>) {
     const file = e.target.files?.[0];
