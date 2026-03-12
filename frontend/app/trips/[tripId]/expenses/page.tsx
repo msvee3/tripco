@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import { useParams } from "next/navigation";
 import { useSession } from "next-auth/react";
 import { Plus, Download } from "lucide-react";
-import { api, setTokens } from "@/lib/api";
+import { api, setTokens, getAccessToken } from "@/lib/api";
 import type { Expense, ExpenseSummary } from "@/lib/types";
 
 const CATEGORIES = ["food", "transport", "accommodation", "sightseeing", "shopping", "misc"] as const;
@@ -16,6 +16,7 @@ export default function ExpensesPage() {
   const [summary, setSummary] = useState<ExpenseSummary | null>(null);
   const [loading, setLoading] = useState(true);
   const [showForm, setShowForm] = useState(false);
+  const [successMessage, setSuccessMessage] = useState<string | null>(null);
 
   useEffect(() => {
     if (status === "loading") return;
@@ -77,18 +78,44 @@ export default function ExpensesPage() {
     try {
       await api.del(`/trips/${tripId}/expenses/${expenseId}`);
       setExpenses((prev) => prev.filter((e) => e.id !== expenseId));
+      setSuccessMessage("Expense deleted successfully!");
+      setTimeout(() => setSuccessMessage(null), 3000);
       loadData(); // refresh summary
     } catch (err: any) {
       alert(err.message || "Failed to delete expense");
     }
   }
 
-  function handleExport() {
-    const s = session as any;
-    const token = s?.accessToken;
-    const url = `${process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000"}/trips/${tripId}/expenses/export`;
-    // Open in new tab with token
-    window.open(url, "_blank");
+  async function handleExport() {
+    try {
+      const token = getAccessToken();
+      if (!token) {
+        alert("Not authenticated. Please refresh and try again.");
+        return;
+      }
+      const url = `${process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000"}/trips/${tripId}/expenses/export`;
+      const response = await fetch(url, {
+        headers: {
+          "Authorization": `Bearer ${token}`,
+        },
+      });
+      if (!response.ok) {
+        const body = await response.json().catch(() => ({}));
+        throw new Error(body.detail || `HTTP ${response.status}`);
+      }
+      const blob = await response.blob();
+      const downloadUrl = window.URL.createObjectURL(blob);
+      const link = document.createElement("a");
+      link.href = downloadUrl;
+      link.download = `expenses_${tripId}.csv`;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      window.URL.revokeObjectURL(downloadUrl);
+    } catch (err: any) {
+      console.error("Export failed:", err);
+      alert(err.message || "Failed to export CSV");
+    }
   }
 
   if (loading) {
@@ -101,6 +128,11 @@ export default function ExpensesPage() {
 
   return (
     <div className="mx-auto max-w-4xl px-4 py-8">
+      {successMessage && (
+        <div className="mb-4 rounded-lg bg-green-50 p-4 text-sm text-green-800">
+          ✓ {successMessage}
+        </div>
+      )}
       <div className="mb-6 flex items-center justify-between">
         <h1 className="text-2xl font-bold">Expenses</h1>
         <div className="flex gap-2">

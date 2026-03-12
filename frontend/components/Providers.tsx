@@ -1,21 +1,19 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect } from "react";
 import { SessionProvider } from "next-auth/react";
 import { persistentHydrate } from "@/lib/api";
 
 export function Providers({ children }: { children: React.ReactNode }) {
-  const [hydrated, setHydrated] = useState(false);
-
   useEffect(() => {
     // On app startup: restore session from localStorage and refresh access token
     // (persistent login across browser sessions)
-    persistentHydrate().finally(() => setHydrated(true));
+    // This runs in background; don't block rendering
+    persistentHydrate().catch((err) => {
+      console.warn("Persistent hydration failed (expected if refresh token expired):", err);
+    });
   }, []);
 
-  // Render children only after hydration completes to ensure tokens are ready
-  if (!hydrated) {
-    return null; // or a loading screen
-  }
+  // Render immediately; NextAuth will handle session
   return <SessionProvider>{children}</SessionProvider>;
 }
