@@ -54,12 +54,54 @@ export default function TripDashboardPage() {
   }
 
   const navItems = [
-    { href: `/trips/${tripId}/memories`, icon: Camera, label: "Memories", count: trip.memoryCount },
-    { href: `/trips/${tripId}/expenses`, icon: DollarSign, label: "Expenses", count: `$${trip.totalExpenses.toFixed(0)}` },
-    { href: `/trips/${tripId}/itinerary`, icon: CalendarDays, label: "Itinerary" },
-    { href: `/trips/${tripId}/food`, icon: Utensils, label: "Food Log" },
-    { href: `/trips/${tripId}/tickets`, icon: Ticket, label: "Tickets" },
-    { href: `/trips/${tripId}/members`, icon: Users, label: "Members", count: trip.memberCount },
+    {
+      href: `/trips/${tripId}/memories`,
+      icon: Camera,
+      label: "Memories",
+      count: trip.memoryCount,
+      photo: "https://images.unsplash.com/photo-1452421822248-d4c2b47f0c81?auto=format&fit=crop&w=600&q=70",
+      accent: "from-purple-900/70 via-purple-700/20 to-transparent",
+    },
+    {
+      href: `/trips/${tripId}/expenses`,
+      icon: DollarSign,
+      label: "Expenses",
+      count: `$${trip.totalExpenses.toFixed(0)}`,
+      photo: "https://images.unsplash.com/photo-1554224155-6726b3ff858f?auto=format&fit=crop&w=600&q=70",
+      accent: "from-emerald-900/70 via-emerald-700/20 to-transparent",
+    },
+    {
+      href: `/trips/${tripId}/itinerary`,
+      icon: CalendarDays,
+      label: "Itinerary",
+      count: undefined,
+      photo: "https://images.unsplash.com/photo-1488646953014-85cb44e25828?auto=format&fit=crop&w=600&q=70",
+      accent: "from-sky-900/70 via-sky-700/20 to-transparent",
+    },
+    {
+      href: `/trips/${tripId}/food`,
+      icon: Utensils,
+      label: "Food Log",
+      count: undefined,
+      photo: "https://images.unsplash.com/photo-1414235077428-338989a2e8c0?auto=format&fit=crop&w=600&q=70",
+      accent: "from-orange-900/70 via-orange-700/20 to-transparent",
+    },
+    {
+      href: `/trips/${tripId}/tickets`,
+      icon: Ticket,
+      label: "Tickets",
+      count: undefined,
+      photo: "https://images.unsplash.com/photo-1436491865332-7a61a109cc05?auto=format&fit=crop&w=600&q=70",
+      accent: "from-blue-900/70 via-blue-700/20 to-transparent",
+    },
+    {
+      href: `/trips/${tripId}/members`,
+      icon: Users,
+      label: "Members",
+      count: trip.memberCount,
+      photo: "https://images.unsplash.com/photo-1539635278303-d4002c07eae3?auto=format&fit=crop&w=600&q=70",
+      accent: "from-rose-900/70 via-rose-700/20 to-transparent",
+    },
   ];
 
   return (
@@ -70,9 +112,11 @@ export default function TripDashboardPage() {
           <img
             src={trip.coverPhoto}
             alt=""
-            className="absolute inset-0 h-full w-full object-cover mix-blend-overlay opacity-30"
+            className="absolute inset-0 h-full w-full object-cover"
           />
         )}
+        {/* scrim so text always readable */}
+        <div className="absolute inset-0 bg-gradient-to-r from-black/60 via-black/30 to-transparent" />
         <div className="relative z-10">
           <span
             className={clsx(
@@ -103,15 +147,28 @@ export default function TripDashboardPage() {
           <Link
             key={item.label}
             href={item.href}
-            className="group flex items-center gap-4 rounded-xl border p-5 transition-colors hover:border-brand-300 hover:bg-brand-50"
+            className="group relative h-36 overflow-hidden rounded-xl shadow-sm transition-all hover:shadow-lg hover:scale-[1.02]"
           >
-            <div className="flex h-12 w-12 items-center justify-center rounded-lg bg-brand-100 text-brand-600 group-hover:bg-brand-200">
-              <item.icon className="h-6 w-6" />
-            </div>
-            <div>
-              <p className="font-semibold text-gray-900">{item.label}</p>
+            {/* Background photo */}
+            <img
+              src={item.photo}
+              alt={item.label}
+              className="absolute inset-0 h-full w-full object-cover"
+            />
+            {/* Left-to-right accent scrim + bottom dark scrim */}
+            <div className={`absolute inset-0 bg-gradient-to-r ${item.accent}`} />
+            <div className="absolute inset-0 bg-gradient-to-t from-black/65 via-transparent to-transparent" />
+
+            {/* Content */}
+            <div className="absolute inset-0 flex flex-col justify-end p-4">
+              <div className="flex items-center gap-2">
+                <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-white/20 backdrop-blur-sm">
+                  <item.icon className="h-4 w-4 text-white" />
+                </div>
+                <p className="font-bold text-white drop-shadow">{item.label}</p>
+              </div>
               {item.count !== undefined && (
-                <p className="text-sm text-gray-500">{item.count}</p>
+                <p className="mt-0.5 pl-10 text-sm font-medium text-white/80">{item.count}</p>
               )}
             </div>
           </Link>
