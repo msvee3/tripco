@@ -6,6 +6,7 @@ import { useSession } from "next-auth/react";
 import { Upload, X, MapPin, Tag, ChevronLeft, ChevronRight } from "lucide-react";
 import { api, setTokens } from "@/lib/api";
 import type { Memory, SASResponse } from "@/lib/types";
+import { TripPageHero } from "@/components/TripPageHero";
 
 export default function MemoriesPage() {
   const { tripId } = useParams<{ tripId: string }>();
