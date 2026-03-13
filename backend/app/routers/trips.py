@@ -12,6 +12,7 @@ from app.db.cosmos_client import (
     upsert_item,
 )
 from app.middleware.auth import get_current_user
+from app.services.blob import generate_read_sas
 from app.models.schemas import (
     CreateTripRequest,
     InviteRequest,
@@ -27,6 +28,16 @@ from app.models.schemas import (
 )
 
 router = APIRouter(prefix="/trips", tags=["trips"])
+
+
+def _cover_photo_url(blob_name: str | None) -> str | None:
+    """Generate a 48-hour read SAS URL for a cover photo blobName, or return None."""
+    if not blob_name:
+        return None
+    try:
+        return generate_read_sas("media", blob_name, ttl_hours=48)
+    except Exception:
+        return blob_name  # fallback to raw value
 
 
 def _compute_status(start: date | None, end: date | None) -> TripStatus:
@@ -46,7 +57,7 @@ def _trip_to_summary(doc: dict) -> TripSummary:
         id=doc["id"],
         title=doc["title"],
         destination=doc.get("destination", ""),
-        coverPhoto=doc.get("coverPhoto"),
+        coverPhoto=_cover_photo_url(doc.get("coverPhoto")),
         startDate=doc.get("startDate"),
         endDate=doc.get("endDate"),
         status=doc.get("status", "upcoming"),
@@ -62,7 +73,7 @@ def _trip_to_detail(doc: dict) -> TripDetail:
         id=doc["id"],
         title=doc["title"],
         destination=doc.get("destination", ""),
-        coverPhoto=doc.get("coverPhoto"),
+        coverPhoto=_cover_photo_url(doc.get("coverPhoto")),
         startDate=doc.get("startDate"),
         endDate=doc.get("endDate"),
         status=doc.get("status", "upcoming"),
