@@ -10,12 +10,16 @@ export const metadata: Metadata = {
   title: "Tripco",
   description: "Your personal travel journal, expense tracker & photo album.",
   manifest: "/manifest.json",
+  icons: {
+    icon: "/favicon.png",
+    apple: "/icons/icon-180.png",
+  },
 };
 
 export const viewport: Viewport = {
   width: "device-width",
   initialScale: 1,
-  themeColor: "#2563eb",
+  themeColor: "#006dce",
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
