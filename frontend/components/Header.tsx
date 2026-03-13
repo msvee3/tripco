@@ -48,36 +48,3 @@ export function Header() {
     </header>
   );
 }
-
-
-        <nav className="flex items-center gap-4 text-sm">
-          {session?.user ? (
-            <>
-              <Link href="/profile" className="text-gray-700 hover:text-brand-600">
-                Profile
-              </Link>
-              <button
-                onClick={() => signOut({ callbackUrl: "/" })}
-                className="rounded-md bg-gray-100 px-3 py-1.5 text-gray-700 hover:bg-gray-200"
-              >
-                Sign out
-              </button>
-            </>
-          ) : (
-            <>
-              <Link href="/auth/login" className="text-gray-700 hover:text-brand-600">
-                Log in
-              </Link>
-              <Link
-                href="/auth/signup"
-                className="rounded-md bg-brand-600 px-3 py-1.5 text-white hover:bg-brand-700"
-              >
-                Sign up
-              </Link>
-            </>
-          )}
-        </nav>
-      </div>
-    </header>
-  );
-}
