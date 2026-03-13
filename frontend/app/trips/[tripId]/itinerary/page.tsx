@@ -18,7 +18,7 @@ interface EditForm {
 
 export default function ItineraryPage() {
   const { tripId } = useParams<{ tripId: string }>();
-  const { data: session } = useSession();
+  const { data: session, status } = useSession();
   const [items, setItems] = useState<ItineraryItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [showForm, setShowForm] = useState(false);
@@ -32,12 +32,13 @@ export default function ItineraryPage() {
   }, []);
 
   useEffect(() => {
-    if (session) {
-      const s = session as any;
-      if (s.accessToken) setTokens(s.accessToken, s.refreshToken);
-      loadItems();
-    }
-  }, [session, tripId]);
+    if (status === "loading") return;
+    if (status !== "authenticated") { setLoading(false); return; }
+    const s = session as any;
+    if (s?.accessToken) setTokens(s.accessToken, s.refreshToken);
+    loadItems();
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [status, tripId]);
 
   async function loadItems() {
     try {
@@ -61,6 +62,7 @@ export default function ItineraryPage() {
       setShowForm(false);
       (e.target as HTMLFormElement).reset();
       showToast("Item added!");
+      loadItems();
     } catch (err: any) { showToast(err.message || "Failed to add", "error"); }
   }
 

@@ -25,14 +25,36 @@ const GRADIENTS = [
   "from-sky-400 to-indigo-500",
 ];
 
+// Travel-themed Unsplash photos — one per gradient slot
+const TRAVEL_PHOTOS = [
+  "https://images.unsplash.com/photo-1476514525535-07fb3b4ae5f1?auto=format&fit=crop&w=600&q=70", // airplane over clouds
+  "https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=600&q=70", // tropical beach
+  "https://images.unsplash.com/photo-1504214208698-ea1916a2195a?auto=format&fit=crop&w=600&q=70", // green jungle river
+  "https://images.unsplash.com/photo-1500534314209-a25ddb2bd429?auto=format&fit=crop&w=600&q=70", // sunset road trip
+  "https://images.unsplash.com/photo-1516483638261-f4dbaf036963?auto=format&fit=crop&w=600&q=70", // Italy travel
+  "https://images.unsplash.com/photo-1469854523086-cc02fe5d8800?auto=format&fit=crop&w=600&q=70", // couple road trip
+  "https://images.unsplash.com/photo-1530521954074-e64f6810b32d?auto=format&fit=crop&w=600&q=70", // pool resort
+  "https://images.unsplash.com/photo-1488646953014-85cb44e25828?auto=format&fit=crop&w=600&q=70", // travel map planning
+  "https://images.unsplash.com/photo-1506905925346-21bda4d32df4?auto=format&fit=crop&w=600&q=70", // mountain reflection
+  "https://images.unsplash.com/photo-1539635278303-d4002c07eae3?auto=format&fit=crop&w=600&q=70", // adventure backpacking
+];
+
 function pickGradient(id: string): string {
   let h = 0;
   for (let i = 0; i < id.length; i++) h = (h * 31 + id.charCodeAt(i)) >>> 0;
   return GRADIENTS[h % GRADIENTS.length];
 }
 
+function pickPhoto(id: string): string {
+  let h = 0;
+  for (let i = 0; i < id.length; i++) h = (h * 31 + id.charCodeAt(i)) >>> 0;
+  return TRAVEL_PHOTOS[h % TRAVEL_PHOTOS.length];
+}
+
 export function TripCard({ trip }: { trip: TripSummary }) {
   const gradient = pickGradient(trip.id);
+  const fallbackPhoto = pickPhoto(trip.id);
+  const bgPhoto = trip.coverPhoto ?? fallbackPhoto;
 
   return (
     <Link
@@ -41,13 +63,11 @@ export function TripCard({ trip }: { trip: TripSummary }) {
     >
       {/* Background layer — gradient always present, image on top */}
       <div className={clsx("absolute inset-0 bg-gradient-to-br", gradient)}>
-        {trip.coverPhoto && (
-          <img
-            src={trip.coverPhoto}
-            alt={trip.title}
-            className="h-full w-full object-cover"
-          />
-        )}
+        <img
+          src={bgPhoto}
+          alt={trip.title}
+          className="h-full w-full object-cover"
+        />
       </div>
 
       {/* Dark scrim so text is always readable */}
