@@ -6,6 +6,7 @@ import { useSession } from "next-auth/react";
 import { Plus, Star, MapPin, Trash2, Pencil, Check, X } from "lucide-react";
 import { api, setTokens } from "@/lib/api";
 import type { FoodLog } from "@/lib/types";
+import { Toast } from "@/components/Toast";
 
 interface TripDateRange {
   min: string;
@@ -29,6 +30,7 @@ export default function FoodPage() {
   // Edit state
   const [editingId, setEditingId] = useState<string | null>(null);
   const [editForm, setEditForm] = useState<Partial<FoodLog>>({});
+  const [toast, setToast] = useState<{ message: string; type: "success" | "error" } | null>(null);
 
   useEffect(() => {
     if (status === "loading") return;
@@ -80,8 +82,9 @@ export default function FoodPage() {
       setLogs((prev) => [log, ...prev]);
       setShowForm(false);
       (e.target as HTMLFormElement).reset();
+      setToast({ message: "Food log added!", type: "success" });
     } catch (err: any) {
-      alert(err.message);
+      setToast({ message: err.message || "Failed to add", type: "error" });
     }
   }
 
@@ -107,8 +110,9 @@ export default function FoodPage() {
       });
       setLogs((prev) => prev.map((l) => (l.id === logId ? updated : l)));
       setEditingId(null);
+      setToast({ message: "Food log updated!", type: "success" });
     } catch (err: any) {
-      alert(err.message || "Failed to save changes");
+      setToast({ message: err.message || "Failed to save changes", type: "error" });
     }
   }
 
@@ -117,8 +121,9 @@ export default function FoodPage() {
     try {
       await api.del(`/trips/${tripId}/food/${logId}`);
       setLogs((prev) => prev.filter((log) => log.id !== logId));
+      setToast({ message: "Food log deleted!", type: "success" });
     } catch (err: any) {
-      alert(err.message || "Failed to delete food log");
+      setToast({ message: err.message || "Failed to delete food log", type: "error" });
     }
   }
 
@@ -132,6 +137,7 @@ export default function FoodPage() {
 
   return (
     <div className="mx-auto max-w-3xl px-4 py-8">
+      <Toast message={toast?.message ?? null} type={toast?.type} onDismiss={() => setToast(null)} />
       <div className="mb-6 flex items-center justify-between">
         <h1 className="text-2xl font-bold">Food Log</h1>
         <button

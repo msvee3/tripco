@@ -165,6 +165,14 @@ class CreateExpenseRequest(BaseModel):
     date: _dt.date | None = None
 
 
+class UpdateExpenseRequest(BaseModel):
+    category: ExpenseCategory | None = None
+    amount: float | None = Field(default=None, gt=0)
+    currency: str | None = Field(default=None, max_length=3)
+    description: str | None = None
+    date: _dt.date | None = None
+
+
 class ExpenseOut(BaseModel):
     id: str
     tripId: str

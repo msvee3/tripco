@@ -5,7 +5,7 @@ export function Footer() {
         <p className="font-medium text-gray-700">Tripco</p>
         <p>
           Designed &amp; Developed by{" "}
-          <span className="font-semibold text-brand-600">Vishwas</span>
+          <span className="font-semibold text-brand-600">oodhwe</span>
         </p>
         <p className="text-xs text-gray-400">&copy; {new Date().getFullYear()} Tripco. All rights reserved.</p>
       </div>

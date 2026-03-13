@@ -11,6 +11,7 @@ from app.db.cosmos_client import create_item, query_items, upsert_item, delete_i
 from app.middleware.auth import get_current_user
 from app.models.schemas import (
     CreateExpenseRequest,
+    UpdateExpenseRequest,
     ExpenseOut,
     ExpenseSummary,
     SplitEntry,
@@ -79,6 +80,45 @@ def create_expense(trip_id: str, body: CreateExpenseRequest, user: dict = Depend
     upsert_item("Trips", trip)
 
     return _doc_to_expense(doc)
+
+
+# ── Update expense ───────────────────────────────────────
+
+@router.patch("/trips/{trip_id}/expenses/{expense_id}", response_model=ExpenseOut)
+def update_expense(trip_id: str, expense_id: str, body: UpdateExpenseRequest, user: dict = Depends(get_current_user)):
+    trip = _ensure_trip_member(trip_id, user["id"])
+    expense = read_item("TripItems", expense_id, trip_id)
+    if not expense:
+        raise HTTPException(status_code=404, detail="Expense not found")
+    if expense.get("type") != "expense":
+        raise HTTPException(status_code=400, detail="Item is not an expense")
+
+    old_amount = expense.get("amountBase", expense.get("amount", 0))
+
+    if body.category is not None:
+        expense["category"] = body.category.value
+    if body.amount is not None:
+        expense["amount"] = body.amount
+        expense["amountBase"] = body.amount
+    if body.currency is not None:
+        expense["currency"] = body.currency.upper()
+    if body.description is not None:
+        expense["description"] = body.description
+    if body.date is not None:
+        expense["date"] = body.date.isoformat()
+
+    expense["updatedAt"] = utcnow()
+    expense["version"] = expense.get("version", 1) + 1
+    upsert_item("TripItems", expense)
+
+    # Update trip total if amount changed
+    if body.amount is not None:
+        new_amount = body.amount
+        trip["totalExpenses"] = max(0, trip.get("totalExpenses", 0) - old_amount + new_amount)
+        trip["updatedAt"] = utcnow()
+        upsert_item("Trips", trip)
+
+    return _doc_to_expense(expense)
 
 
 # ── Delete expense ───────────────────────────────────────

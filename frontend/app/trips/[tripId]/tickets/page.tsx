@@ -3,9 +3,10 @@
 import { useEffect, useRef, useState } from "react";
 import { useParams } from "next/navigation";
 import { useSession } from "next-auth/react";
-import { Plus, FileText, Plane, Building2, CalendarDays, Upload, X } from "lucide-react";
+import { Plus, FileText, Plane, Building2, CalendarDays, Upload, X, Pencil, Trash2 } from "lucide-react";
 import { api, setTokens } from "@/lib/api";
 import type { Ticket, SASResponse } from "@/lib/types";
+import { Toast } from "@/components/Toast";
 
 const typeIcons: Record<string, React.ReactNode> = {
   flight: <Plane className="h-5 w-5 text-blue-500" />,
@@ -22,6 +23,7 @@ export default function TicketsPage() {
   const [uploading, setUploading] = useState(false);
   const [showForm, setShowForm] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
+  const [toast, setToast] = useState<{ message: string; type: "success" | "error" } | null>(null);
   const [formData, setFormData] = useState({
     type: "flight",
     title: "",
@@ -103,8 +105,9 @@ export default function TicketsPage() {
       }
       setShowForm(false);
       setFormData({ type: "flight", title: "", date: "", notes: "", fileUrl: "" });
+      setToast({ message: editingId ? "Ticket updated!" : "Ticket added!", type: "success" });
     } catch (err: any) {
-      alert(err.message);
+      setToast({ message: err.message || "Failed to save ticket", type: "error" });
     }
   }
 
@@ -113,8 +116,9 @@ export default function TicketsPage() {
     try {
       await api.del(`/trips/${tripId}/tickets/${id}`);
       setTickets((prev) => prev.filter((t) => t.id !== id));
+      setToast({ message: "Ticket deleted!", type: "success" });
     } catch (err: any) {
-      alert(err.message);
+      setToast({ message: err.message || "Failed to delete", type: "error" });
     }
   }
 
@@ -140,6 +144,7 @@ export default function TicketsPage() {
 
   return (
     <div className="mx-auto max-w-3xl px-4 py-8">
+      <Toast message={toast?.message ?? null} type={toast?.type} onDismiss={() => setToast(null)} />
       <div className="mb-6 flex items-center justify-between">
         <h1 className="text-2xl font-bold">Tickets</h1>
         <button
@@ -275,7 +280,7 @@ export default function TicketsPage() {
                     </div>
                   </div>
                 </div>
-                <div className="flex flex-wrap gap-2 md:flex-col md:items-end">
+                <div className="flex items-center gap-2 md:flex-col md:items-end">
                   {t.fileUrl && (
                     <a
                       href={t.fileUrl}
@@ -288,17 +293,19 @@ export default function TicketsPage() {
                   )}
                   <button
                     onClick={() => handleEdit(t)}
-                    className="bg-blue-100 text-blue-700 px-3 py-1 rounded text-sm hover:bg-blue-200 font-medium"
+                    className="rounded p-1.5 text-brand-600 hover:bg-brand-50"
+                    title="Edit"
                     type="button"
                   >
-                    Edit
+                    <Pencil className="h-4 w-4" />
                   </button>
                   <button
                     onClick={() => handleDelete(t.id)}
-                    className="bg-red-100 text-red-700 px-3 py-1 rounded text-sm hover:bg-red-200 font-medium"
+                    className="rounded p-1.5 text-red-500 hover:bg-red-50"
+                    title="Delete"
                     type="button"
                   >
-                    Delete
+                    <Trash2 className="h-4 w-4" />
                   </button>
                 </div>
               </div>
