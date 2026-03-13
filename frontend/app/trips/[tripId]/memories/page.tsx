@@ -3,7 +3,7 @@
 import { useEffect, useState, useRef, useCallback } from "react";
 import { useParams } from "next/navigation";
 import { useSession } from "next-auth/react";
-import { Upload, X, MapPin, Tag, ChevronLeft, ChevronRight } from "lucide-react";
+import { Upload, X, MapPin, Tag, ChevronLeft, ChevronRight, Download } from "lucide-react";
 import { api, setTokens } from "@/lib/api";
 import type { Memory, SASResponse } from "@/lib/types";
 import { TripPageHero } from "@/components/TripPageHero";
@@ -159,6 +159,27 @@ export default function MemoriesPage() {
     }
   }
 
+  async function handleDownload(m: Memory) {
+    try {
+      const url = await resolveUrl(m);
+      if (!url) {
+        alert("Failed to prepare download");
+        return;
+      }
+      const filename = m.caption?.replace(/\s+/g, '_') || `memory_${m.id}`;
+      const ext = m.type === "video" ? ".mp4" : ".jpg";
+      const link = document.createElement("a");
+      link.href = url;
+      link.download = filename + ext;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+    } catch (err) {
+      alert("Download failed");
+      console.error(err);
+    }
+  }
+
   if (loading) {
     return (
       <div className="flex h-64 items-center justify-center">
@@ -231,9 +252,16 @@ export default function MemoriesPage() {
                 )}
               </div>
 
-              {/* Delete button */}
+              {/* Delete and download buttons */}
               <button
-                onClick={() => handleDelete(m.id)}
+                onClick={(e) => { e.stopPropagation(); handleDownload(m); }}
+                className="absolute right-12 top-2 rounded-full bg-black/50 p-1 text-white opacity-0 transition-opacity group-hover:opacity-100 hover:bg-blue-600 z-10"
+                title="Download"
+              >
+                <Download className="h-4 w-4" />
+              </button>
+              <button
+                onClick={(e) => { e.stopPropagation(); handleDelete(m.id); }}
                 className="absolute right-2 top-2 rounded-full bg-black/50 p-1 text-white opacity-0 transition-opacity group-hover:opacity-100 hover:bg-red-600 z-10"
               >
                 <X className="h-4 w-4" />
@@ -256,7 +284,14 @@ export default function MemoriesPage() {
           className="fixed inset-0 z-50 flex items-center justify-center bg-black/90"
           onClick={closeLightbox}
         >
-          {/* Close */}
+          {/* Close and Download */}
+          <button
+            onClick={(e) => { e.stopPropagation(); lightboxMemory && handleDownload(lightboxMemory); }}
+            className="absolute left-4 top-4 rounded-full bg-white/10 p-2 text-white hover:bg-blue-500/30 z-10"
+            title="Download"
+          >
+            <Download className="h-6 w-6" />
+          </button>
           <button
             onClick={closeLightbox}
             className="absolute right-4 top-4 rounded-full bg-white/10 p-2 text-white hover:bg-white/20 z-10"
