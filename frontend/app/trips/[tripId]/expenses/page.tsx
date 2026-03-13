@@ -5,7 +5,7 @@ import { useParams } from "next/navigation";
 import { useSession } from "next-auth/react";
 import { Plus, Download, Pencil, Trash2, Check, X } from "lucide-react";
 import { api, setTokens, getAccessToken } from "@/lib/api";
-import type { Expense, ExpenseSummary } from "@/lib/types";
+import type { Expense, ExpenseSummary, TripMember } from "@/lib/types";
 import { Toast } from "@/components/Toast";
 
 const CATEGORIES = ["food", "transport", "accommodation", "sightseeing", "shopping", "misc"] as const;
@@ -25,6 +25,7 @@ export default function ExpensesPage() {
   const [summary, setSummary] = useState<ExpenseSummary | null>(null);
   const [loading, setLoading] = useState(true);
   const [showForm, setShowForm] = useState(false);
+  const [memberMap, setMemberMap] = useState<Record<string, string>>({});
   const [toast, setToast] = useState<{ message: string; type: "success" | "error" } | null>(null);
 
   // Edit state
@@ -41,13 +42,19 @@ export default function ExpensesPage() {
 
   async function loadData() {
     try {
-      const [e, s] = await Promise.all([
+      const [e, s, members] = await Promise.all([
         api.get<Expense[]>(`/trips/${tripId}/expenses`),
         api.get<ExpenseSummary>(`/trips/${tripId}/expenses/summary`),
+        api.get<TripMember[]>(`/trips/${tripId}/members`),
       ]);
       const unique = Array.from(new Map(e.map((exp) => [exp.id, exp])).values());
       setExpenses(unique);
       setSummary(s);
+      const map: Record<string, string> = {};
+      for (const m of members) {
+        map[m.userId] = m.name || m.email || m.userId;
+      }
+      setMemberMap(map);
     } catch { /* offline */ } finally { setLoading(false); }
   }
 
@@ -166,7 +173,7 @@ export default function ExpensesPage() {
             <p className="text-sm text-gray-500">By Person</p>
             <div className="mt-1 space-y-1 text-sm">
               {Object.entries(summary.byPerson).map(([pid, amt]) => (
-                <div key={pid} className="flex justify-between"><span className="truncate">{pid.slice(0, 8)}…</span><span className="font-medium">${amt.toFixed(2)}</span></div>
+                <div key={pid} className="flex justify-between"><span className="truncate">{memberMap[pid] ?? pid.slice(0, 8) + "…"}</span><span className="font-medium">${amt.toFixed(2)}</span></div>
               ))}
             </div>
           </div>

@@ -106,8 +106,8 @@ def _to_out(d: dict) -> TicketOut:
         # Generate read SAS for direct access
         try:
             blob_name = d["fileUrl"]
-            # Use media container for ticket attachments
-            file_url = generate_read_sas("media", blob_name, ttl_hours=24)
+            # Use tickets container for ticket attachments
+            file_url = generate_read_sas("tickets", blob_name, ttl_hours=24)
         except Exception:
             # Fallback to raw stored URL if SAS generation fails
             file_url = d.get("fileUrl")
