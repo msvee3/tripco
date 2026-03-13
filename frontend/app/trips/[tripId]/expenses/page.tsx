@@ -6,6 +6,7 @@ import { useSession } from "next-auth/react";
 import { Plus, Download, Pencil, Trash2, Check, X } from "lucide-react";
 import { api, setTokens, getAccessToken } from "@/lib/api";
 import type { Expense, ExpenseSummary, TripMember } from "@/lib/types";
+import { TripPageHero } from "@/components/TripPageHero";
 import { Toast } from "@/components/Toast";
 
 const CATEGORIES = ["food", "transport", "accommodation", "sightseeing", "shopping", "misc"] as const;
@@ -140,10 +141,10 @@ export default function ExpensesPage() {
 
   return (
     <div className="mx-auto max-w-4xl px-4 py-8">
+      <TripPageHero section="expenses" />
       <Toast message={toast?.message ?? null} type={toast?.type} onDismiss={() => setToast(null)} />
 
-      <div className="mb-6 flex items-center justify-between">
-        <h1 className="text-2xl font-bold">Expenses</h1>
+      <div className="mb-6 flex items-center justify-end">
         <div className="flex gap-2">
           <button onClick={handleExport} className="flex items-center gap-1 rounded-lg border px-3 py-2 text-sm hover:bg-gray-50">
             <Download className="h-4 w-4" /> Export CSV

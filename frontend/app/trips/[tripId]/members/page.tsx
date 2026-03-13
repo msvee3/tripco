@@ -5,6 +5,7 @@ import { useParams } from "next/navigation";
 import { useSession } from "next-auth/react";
 import { UserPlus, Shield, Eye, Edit3 } from "lucide-react";
 import { api, setTokens } from "@/lib/api";
+import { TripPageHero } from "@/components/TripPageHero";
 import type { TripMember } from "@/lib/types";
 
 const roleIcons: Record<string, React.ReactNode> = {
@@ -65,7 +66,7 @@ export default function MembersPage() {
 
   return (
     <div className="mx-auto max-w-2xl px-4 py-8">
-      <h1 className="mb-6 text-2xl font-bold">Members</h1>
+      <TripPageHero section="members" />
 
       {/* Invite form */}
       <form onSubmit={handleInvite} className="mb-6 flex flex-col gap-3 rounded-xl border p-5 sm:flex-row sm:items-end">

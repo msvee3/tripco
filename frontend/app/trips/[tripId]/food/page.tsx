@@ -6,6 +6,7 @@ import { useSession } from "next-auth/react";
 import { Plus, Star, MapPin, Trash2, Pencil, Check, X } from "lucide-react";
 import { api, setTokens } from "@/lib/api";
 import type { FoodLog } from "@/lib/types";
+import { TripPageHero } from "@/components/TripPageHero";
 import { Toast } from "@/components/Toast";
 
 interface TripDateRange {
@@ -137,9 +138,9 @@ export default function FoodPage() {
 
   return (
     <div className="mx-auto max-w-3xl px-4 py-8">
+      <TripPageHero section="food" />
       <Toast message={toast?.message ?? null} type={toast?.type} onDismiss={() => setToast(null)} />
-      <div className="mb-6 flex items-center justify-between">
-        <h1 className="text-2xl font-bold">Food Log</h1>
+      <div className="mb-6 flex items-center justify-end">
         <button
           onClick={() => setShowForm(!showForm)}
           className="flex items-center gap-1 rounded-lg bg-brand-600 px-4 py-2 text-sm font-medium text-white hover:bg-brand-700"

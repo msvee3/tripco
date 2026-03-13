@@ -6,6 +6,7 @@ import { useSession } from "next-auth/react";
 import { Plus, FileText, Plane, Building2, CalendarDays, Upload, X, Pencil, Trash2 } from "lucide-react";
 import { api, setTokens } from "@/lib/api";
 import type { Ticket, SASResponse } from "@/lib/types";
+import { TripPageHero } from "@/components/TripPageHero";
 import { Toast } from "@/components/Toast";
 
 const typeIcons: Record<string, React.ReactNode> = {
@@ -144,9 +145,9 @@ export default function TicketsPage() {
 
   return (
     <div className="mx-auto max-w-3xl px-4 py-8">
+      <TripPageHero section="tickets" />
       <Toast message={toast?.message ?? null} type={toast?.type} onDismiss={() => setToast(null)} />
-      <div className="mb-6 flex items-center justify-between">
-        <h1 className="text-2xl font-bold">Tickets</h1>
+      <div className="mb-6 flex items-center justify-end">
         <button
           onClick={() => {
             setEditingId(null);

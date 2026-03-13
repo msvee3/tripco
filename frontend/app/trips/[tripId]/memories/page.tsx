@@ -171,8 +171,8 @@ export default function MemoriesPage() {
 
   return (
     <div className="mx-auto max-w-6xl px-4 py-8">
-      <div className="mb-6 flex items-center justify-between">
-        <h1 className="text-2xl font-bold">Memories</h1>
+      <TripPageHero section="memories" />
+      <div className="mb-6 flex items-center justify-end">
         <label className="flex cursor-pointer items-center gap-2 rounded-lg bg-brand-600 px-4 py-2.5 text-sm font-medium text-white hover:bg-brand-700">
           <Upload className="h-4 w-4" />
           {uploading ? "Uploading…" : "Upload"}
