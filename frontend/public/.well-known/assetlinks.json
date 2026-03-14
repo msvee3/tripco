@@ -1,0 +1,8 @@
+[{
+      "relation": ["delegate_permission/common.handle_all_urls"],
+      "target": {
+        "namespace": "android_app",
+        "package_name": "in.oodhwe.tripco.twa",
+        "sha256_cert_fingerprints": ["04:C0:4B:8C:DF:F6:32:3F:28:A7:E8:D6:B7:5B:F5:C1:43:DE:C0:37:5A:65:DC:72:04:EA:0B:C0:9B:48:27:47"]
+      }
+    }]
