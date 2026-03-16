@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { Calendar, Users, Image, DollarSign } from "lucide-react";
+import { Calendar, Users, Image, IndianRupee, Trash2 } from "lucide-react";
 import clsx from "clsx";
 import type { TripSummary } from "@/lib/types";
 
@@ -51,16 +51,28 @@ function pickPhoto(id: string): string {
   return TRAVEL_PHOTOS[h % TRAVEL_PHOTOS.length];
 }
 
-export function TripCard({ trip }: { trip: TripSummary }) {
+export function TripCard({ trip, onDelete }: { trip: TripSummary; onDelete?: (id: string) => void }) {
   const gradient = pickGradient(trip.id);
   const fallbackPhoto = pickPhoto(trip.id);
   const bgPhoto = trip.coverPhoto ?? fallbackPhoto;
 
   return (
-    <Link
-      href={`/trips/${trip.id}`}
-      className="group relative flex h-56 flex-col overflow-hidden rounded-xl shadow-sm transition-all hover:shadow-lg hover:scale-[1.02]"
-    >
+    <div className="group relative flex h-56 flex-col overflow-hidden rounded-xl shadow-sm transition-all hover:shadow-lg hover:scale-[1.02]">
+      {/* Delete button — top left */}
+      {onDelete && (
+        <button
+          onClick={(e) => { e.preventDefault(); e.stopPropagation(); onDelete(trip.id); }}
+          className="absolute top-3 left-3 z-20 flex h-7 w-7 items-center justify-center rounded-full bg-red-600/80 text-white opacity-0 transition-opacity group-hover:opacity-100 hover:bg-red-700"
+          title="Delete trip"
+        >
+          <Trash2 className="h-3.5 w-3.5" />
+        </button>
+      )}
+
+      <Link
+        href={`/trips/${trip.id}`}
+        className="absolute inset-0"
+      >
       {/* Background layer — gradient always present, image on top */}
       <div className={clsx("absolute inset-0 bg-gradient-to-br", gradient)}>
         <img
@@ -104,11 +116,12 @@ export function TripCard({ trip }: { trip: TripSummary }) {
             {trip.memoryCount}
           </span>
           <span className="flex items-center gap-1">
-            <DollarSign className="h-3.5 w-3.5" />
+            <IndianRupee className="h-3.5 w-3.5" />
             {trip.totalExpenses.toFixed(0)}
           </span>
         </div>
       </div>
     </Link>
+    </div>
   );
 }

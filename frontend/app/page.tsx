@@ -4,7 +4,7 @@ import Link from "next/link";
 import { useEffect } from "react";
 import { useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
-import { MapPin, Camera, DollarSign, Wifi, WifiOff } from "lucide-react";
+import { MapPin, Camera, IndianRupee, Wifi, WifiOff } from "lucide-react";
 
 export default function LandingPage() {
   const { data: session, status } = useSession();
@@ -38,7 +38,7 @@ export default function LandingPage() {
       desc: "Capture and relive every moment – upload photos, videos, and notes, auto-organized by date.",
     },
     {
-      icon: <DollarSign className="h-8 w-8 text-brand-500" />,
+      icon: <IndianRupee className="h-8 w-8 text-brand-500" />,
       title: "Expense Tracking",
       desc: "Log expenses in any currency, split bills with friends, and export reports as CSV.",
     },

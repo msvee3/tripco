@@ -63,7 +63,7 @@ def create_expense(trip_id: str, body: CreateExpenseRequest, user: dict = Depend
         "amount": body.amount,
         "currency": body.currency.upper(),
         "amountBase": body.amount,  # TODO: convert via exchange rate API
-        "baseCurrency": "USD",
+        "baseCurrency": "INR",
         "description": body.description,
         "paidBy": body.paidBy,
         "splitWith": [s.model_dump() for s in body.splitWith],
@@ -168,7 +168,7 @@ def expense_summary(trip_id: str, user: dict = Depends(get_current_user)):
 
     return ExpenseSummary(
         totalBase=round(total, 2),
-        baseCurrency="USD",
+        baseCurrency="INR",
         byCategory={k: round(v, 2) for k, v in by_cat.items()},
         byPerson={k: round(v, 2) for k, v in by_person.items()},
     )
@@ -214,9 +214,9 @@ def _doc_to_expense(d: dict) -> ExpenseOut:
         userId=d["userId"],
         category=d.get("category", "misc"),
         amount=d.get("amount", 0),
-        currency=d.get("currency", "USD"),
+        currency=d.get("currency", "INR"),
         amountBase=d.get("amountBase"),
-        baseCurrency=d.get("baseCurrency", "USD"),
+        baseCurrency=d.get("baseCurrency", "INR"),
         description=d.get("description", ""),
         paidBy=d.get("paidBy", ""),
         splitWith=[SplitEntry(**s) for s in d.get("splitWith", [])],

@@ -4,16 +4,18 @@ import { useEffect, useState } from "react";
 import { useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
-import { Plus, MapPin, Calendar, Users, Image, DollarSign } from "lucide-react";
+import { Plus, MapPin, Calendar, Users, Image, IndianRupee } from "lucide-react";
 import type { TripSummary } from "@/lib/types";
 import { api, setTokens } from "@/lib/api";
 import { TripCard } from "@/components/TripCard";
+import { Toast } from "@/components/Toast";
 
 export default function DashboardPage() {
   const { data: session, status } = useSession();
   const router = useRouter();
   const [trips, setTrips] = useState<TripSummary[]>([]);
   const [loading, setLoading] = useState(true);
+  const [toast, setToast] = useState<{ message: string; type: "success" | "error" } | null>(null);
 
   useEffect(() => {
     if (status === "unauthenticated") {
@@ -40,6 +42,17 @@ export default function DashboardPage() {
     }
   }
 
+  async function handleDeleteTrip(tripId: string) {
+    if (!confirm("Are you sure you want to delete this trip? This cannot be undone.")) return;
+    try {
+      await api.del(`/trips/${tripId}`);
+      setTrips((prev) => prev.filter((t) => t.id !== tripId));
+      setToast({ message: "Trip deleted successfully", type: "success" });
+    } catch (err: any) {
+      setToast({ message: err.message || "Failed to delete trip", type: "error" });
+    }
+  }
+
   if (status === "loading" || loading) {
     return (
       <div className="flex h-64 items-center justify-center">
@@ -50,6 +63,7 @@ export default function DashboardPage() {
 
   return (
     <div className="mx-auto max-w-7xl px-4 py-8">
+      <Toast message={toast?.message ?? null} type={toast?.type} onDismiss={() => setToast(null)} />
       <div className="mb-8 flex items-center justify-between">
         <div>
           <h1 className="text-2xl font-bold">My Trips</h1>
@@ -79,7 +93,7 @@ export default function DashboardPage() {
       ) : (
         <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
           {trips.map((trip) => (
-            <TripCard key={trip.id} trip={trip} />
+            <TripCard key={trip.id} trip={trip} onDelete={handleDeleteTrip} />
           ))}
         </div>
       )}

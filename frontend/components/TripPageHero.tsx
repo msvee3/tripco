@@ -1,6 +1,6 @@
 "use client";
 
-import { Camera, DollarSign, CalendarDays, Utensils, Ticket, Users } from "lucide-react";
+import { Camera, IndianRupee, CalendarDays, Utensils, Ticket, Users } from "lucide-react";
 
 type Section = "memories" | "expenses" | "itinerary" | "food" | "tickets" | "members";
 
@@ -21,7 +21,7 @@ const SECTIONS: Record<Section, SectionMeta> = {
   },
   expenses: {
     label: "Expenses",
-    icon: DollarSign,
+    icon: IndianRupee,
     photo:
       "https://images.unsplash.com/photo-1554224155-6726b3ff858f?auto=format&fit=crop&w=800&q=75",
     accent: "from-emerald-900/70 via-emerald-700/30 to-transparent",

@@ -46,6 +46,11 @@ class UserOut(BaseModel):
     createdAt: str
 
 
+class ChangePasswordRequest(BaseModel):
+    currentPassword: str
+    newPassword: str = Field(min_length=8)
+
+
 # ── Trip ─────────────────────────────────────────────────
 
 class TripStatus(str, Enum):
@@ -158,7 +163,7 @@ class SplitEntry(BaseModel):
 class CreateExpenseRequest(BaseModel):
     category: ExpenseCategory
     amount: float = Field(gt=0)
-    currency: str = Field(default="USD", max_length=3)
+    currency: str = Field(default="INR", max_length=3)
     description: str = ""
     paidBy: str  # userId
     splitWith: list[SplitEntry] = []
@@ -181,7 +186,7 @@ class ExpenseOut(BaseModel):
     amount: float
     currency: str
     amountBase: float | None = None
-    baseCurrency: str = "USD"
+    baseCurrency: str = "INR"
     description: str = ""
     paidBy: str
     splitWith: list[SplitEntry] = []

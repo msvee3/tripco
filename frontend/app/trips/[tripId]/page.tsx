@@ -6,7 +6,7 @@ import { useSession } from "next-auth/react";
 import Link from "next/link";
 import {
   Camera,
-  DollarSign,
+  IndianRupee,
   CalendarDays,
   Utensils,
   Ticket,
@@ -64,9 +64,9 @@ export default function TripDashboardPage() {
     },
     {
       href: `/trips/${tripId}/expenses`,
-      icon: DollarSign,
+      icon: IndianRupee,
       label: "Expenses",
-      count: `$${trip.totalExpenses.toFixed(0)}`,
+      count: `₹${trip.totalExpenses.toFixed(0)}`,
       photo: "https://images.unsplash.com/photo-1554224155-6726b3ff858f?auto=format&fit=crop&w=600&q=70",
       accent: "from-emerald-900/70 via-emerald-700/20 to-transparent",
     },

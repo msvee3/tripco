@@ -31,7 +31,7 @@ export default function ExpensesPage() {
 
   // Edit state
   const [editingId, setEditingId] = useState<string | null>(null);
-  const [editForm, setEditForm] = useState<EditForm>({ category: "food", amount: "", currency: "USD", description: "", date: "" });
+  const [editForm, setEditForm] = useState<EditForm>({ category: "food", amount: "", currency: "INR", description: "", date: "" });
 
   useEffect(() => {
     if (status === "loading") return;
@@ -67,7 +67,7 @@ export default function ExpensesPage() {
       const expense = await api.post<Expense>(`/trips/${tripId}/expenses`, {
         category: form.get("category"),
         amount: parseFloat(form.get("amount") as string),
-        currency: form.get("currency") || "USD",
+        currency: form.get("currency") || "INR",
         description: form.get("description"),
         paidBy: userId,
         date: form.get("date") || undefined,
@@ -160,13 +160,13 @@ export default function ExpensesPage() {
         <div className="mb-6 grid gap-4 sm:grid-cols-3">
           <div className="rounded-xl border p-4">
             <p className="text-sm text-gray-500">Total</p>
-            <p className="text-2xl font-bold">${summary.totalBase.toFixed(2)}</p>
+            <p className="text-2xl font-bold">₹{summary.totalBase.toFixed(2)}</p>
           </div>
           <div className="rounded-xl border p-4">
             <p className="text-sm text-gray-500">By Category</p>
             <div className="mt-1 space-y-1 text-sm">
               {Object.entries(summary.byCategory).map(([cat, amt]) => (
-                <div key={cat} className="flex justify-between"><span className="capitalize">{cat}</span><span className="font-medium">${amt.toFixed(2)}</span></div>
+                <div key={cat} className="flex justify-between"><span className="capitalize">{cat}</span><span className="font-medium">₹{amt.toFixed(2)}</span></div>
               ))}
             </div>
           </div>
@@ -174,7 +174,7 @@ export default function ExpensesPage() {
             <p className="text-sm text-gray-500">By Person</p>
             <div className="mt-1 space-y-1 text-sm">
               {Object.entries(summary.byPerson).map(([pid, amt]) => (
-                <div key={pid} className="flex justify-between"><span className="truncate">{memberMap[pid] ?? pid.slice(0, 8) + "…"}</span><span className="font-medium">${amt.toFixed(2)}</span></div>
+                <div key={pid} className="flex justify-between"><span className="truncate">{memberMap[pid] ?? pid.slice(0, 8) + "…"}</span><span className="font-medium">₹{amt.toFixed(2)}</span></div>
               ))}
             </div>
           </div>
@@ -197,7 +197,7 @@ export default function ExpensesPage() {
             </div>
             <div>
               <label className="block text-sm font-medium text-gray-700">Currency</label>
-              <input name="currency" defaultValue="USD" maxLength={3} className="mt-1 block w-full rounded-md border border-gray-300 px-3 py-2" />
+              <input name="currency" defaultValue="INR" maxLength={3} className="mt-1 block w-full rounded-md border border-gray-300 px-3 py-2" />
             </div>
           </div>
           <div className="grid gap-4 sm:grid-cols-2">

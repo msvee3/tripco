@@ -5,6 +5,7 @@ import { Header } from "@/components/Header";
 import { Footer } from "@/components/Footer";
 import { PWAInit } from "@/components/PWAInit";
 import { SyncStatus } from "@/components/SyncStatus";
+import { CookieConsent } from "@/components/CookieConsent";
 
 export const metadata: Metadata = {
   title: "Tripco",
@@ -31,6 +32,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           <main className="flex-1">{children}</main>
           <SyncStatus />
           <PWAInit />
+          <CookieConsent />
           <Footer />
         </Providers>
       </body>
