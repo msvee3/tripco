@@ -6,6 +6,7 @@ import { Footer } from "@/components/Footer";
 import { PWAInit } from "@/components/PWAInit";
 import { SyncStatus } from "@/components/SyncStatus";
 import { CookieConsent } from "@/components/CookieConsent";
+import { Analytics } from "@vercel/analytics/next";
 
 export const metadata: Metadata = {
   title: "Tripco",
@@ -35,6 +36,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           <CookieConsent />
           <Footer />
         </Providers>
+        <Analytics />
       </body>
     </html>
   );
